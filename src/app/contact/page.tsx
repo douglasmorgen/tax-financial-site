@@ -46,7 +46,7 @@ const ContactForm = () => {
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-10 py-12">
       <h1 className="text-5xl font-semibold text-center text-gray-800 mb-8">
-        Get in touch with Doug to help you with your financial needs
+        Get in touch with Doug
       </h1>
 
       {success && <p className="text-green-600 text-lg mb-4">{success}</p>}
@@ -62,7 +62,7 @@ const ContactForm = () => {
         </div>
         <div className="bg-green-100 p-4 rounded-lg shadow-md">
           <p className="text-lg text-gray-800 font-semibold">
-            &quot;I wish I&apos;d met Doug sooner. His tax strategies saved me thousands!&quot;
+            &quot;I wish I&apos;d met Doug sooner. His tax strategies saved me tens of thousands of dollars!&quot;
           </p>
           <p className="text-sm text-gray-600 mt-2">– John D., Venture Capitalist</p>
         </div>

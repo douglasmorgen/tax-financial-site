@@ -5,21 +5,20 @@ const HomePage = () => {
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
       {/* Header Section */}
       <header className="text-center mb-16">
-        <h1 className="text-5xl font-bold text-gray-900 leading-tight">
+        <h2 className="text-3xl font-bold text-gray-900 leading-tight">
           Expert Tax, Financial & Investment Planning for Tech Professionals
-        </h1>
+        </h2>
         <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-          With my experience as a Silicon Valley engineer and business owner, I help individuals and startups navigate complex financial challenges, optimize taxes, and make informed decisions about RSUs, stock options, and cap tables.
+          I help individuals and startups navigate complex financial challenges, optimize taxes, and make informed decisions about RSUs, stock options, and cap tables.
         </p>
       </header>
 
-      {/* Why Choose Me Section */}
       <section className="mb-16 text-center">
-        <h2 className="text-4xl font-semibold text-gray-900 mb-8">Why Choose Me?</h2>
+        <h3 className="text-4xl font-semibold text-gray-900 mb-8">Why Choose Me?</h3>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          I specialize in creating personalized financial plans that work for you. Whether it’s maximizing your tax efficiency or understanding the intricacies of equity compensation, I’m here to guide you through it all.
+          I specialize in creating personalized financial plans that work for you. Whether it’s maximizing your tax efficiency or understanding the intricacies of equity compensation, I’m here to guide you through whatever you're facing next.
         </p>
-      </section>
+      </section>      
 
       {/* Expertise Section */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
