@@ -56,7 +56,7 @@ const ContactForm = () => {
       <div className="space-y-6 mb-12">
         <div className="bg-blue-100 p-4 rounded-lg shadow-md">
           <p className="text-lg text-gray-800 font-semibold">
-            &quot;Doug increased my annual returns by 3% with less risk and saved me $25,000 a year over my previous financial advisor!&quot;
+            &quot;Doug increased my annual returns by 2% with less risk and saved me $25,000 a year over my previous financial advisor!&quot;
           </p>
           <p className="text-sm text-gray-600 mt-2">– Sarah M., Founder, Tech Startup</p>
         </div>
