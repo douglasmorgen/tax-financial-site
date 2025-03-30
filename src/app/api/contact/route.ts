@@ -1,12 +1,6 @@
-'use server';
-
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import axios from "axios";
-
-
-const prisma = new PrismaClient();
-
+import { prisma } from "../../../lib/prisma";
 
 const sendEmail = async (name: string, email: string, message: string) => {
   const emailData = {
@@ -64,14 +58,12 @@ export async function POST(req: Request) {
       if (!recaptchaResponse.data.success) {
         return NextResponse.json({ message: "reCAPTCHA verification failed" }, { status: 400 });
       }
-    } catch (err) {
+    } catch {
       return NextResponse.json({ message: "reCAPTCHA verification failed" }, { status: 500 });
     }
   }
 
-  
   try {
-    
     await prisma.contactMessage.create({
       data: {
         name,
@@ -82,7 +74,6 @@ export async function POST(req: Request) {
 
     await sendEmail(name, email, message);
 
-    
     return NextResponse.json({ message: `Your message from ${name} has been sent successfully!` });
   } catch (error) {
     console.error("Error processing contact form:", error);
