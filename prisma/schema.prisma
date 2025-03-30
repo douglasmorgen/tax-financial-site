@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model for storing contact messages (user inquiries or messages)
+model ContactMessage {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+// Model for storing leads captured from forms (e.g., signup forms, landing pages)
+model LeadCapture {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String   @unique
+  name      String?
+  source    String?
+  phoneNumber String?
+  createdAt DateTime @default(now())
+}

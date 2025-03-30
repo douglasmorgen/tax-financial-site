@@ -1,103 +1,69 @@
-import Image from "next/image";
+import React from 'react';
 
-export default function Home() {
+const HomePage = () => {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+      {/* Header Section */}
+      <header className="text-center mb-16">
+        <h1 className="text-5xl font-bold text-gray-900 leading-tight">
+          Expert Tax, Financial & Investment Planning for Tech Professionals
+        </h1>
+        <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+          With my experience as a Silicon Valley engineer and business owner, I help individuals and startups navigate complex financial challenges, optimize taxes, and make informed decisions about RSUs, stock options, and cap tables.
+        </p>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Why Choose Me Section */}
+      <section className="mb-16 text-center">
+        <h2 className="text-4xl font-semibold text-gray-900 mb-8">Why Choose Me?</h2>
+        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          I specialize in creating personalized financial plans that work for you. Whether it’s maximizing your tax efficiency or understanding the intricacies of equity compensation, I’m here to guide you through it all.
+        </p>
+      </section>
+
+      {/* Expertise Section */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+        <div className="space-y-4 text-center">
+          <h3 className="text-3xl font-semibold text-gray-900">Tax & Financial Planning</h3>
+          <p className="text-lg text-gray-600">
+            Get expert advice on managing your finances with a strategy that reduces taxes and prepares for long-term growth.
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+        <div className="space-y-4 text-center">
+          <h3 className="text-3xl font-semibold text-gray-900">RSU & Stock Options</h3>
+          <p className="text-lg text-gray-600">
+            Understand your stock compensation options and make informed decisions to grow your wealth with RSUs and stock options.
+          </p>
+        </div>
+        <div className="space-y-4 text-center">
+          <h3 className="text-3xl font-semibold text-gray-900">Cap Table Management</h3>
+          <p className="text-lg text-gray-600">
+            I’ll help you manage your startup’s cap table, ensuring clarity and control as your company grows.
+          </p>
+        </div>
+        <div className="space-y-4 text-center">
+          <h3 className="text-3xl font-semibold text-gray-900">Investment Planning</h3>
+          <p className="text-lg text-gray-600">
+            Build a custom investment strategy that aligns with your financial goals and risk tolerance.
+          </p>
+        </div>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="text-center">
+        <h2 className="text-3xl font-semibold text-gray-900 mb-4">Ready to Get Started?</h2>
+        <p className="text-lg text-gray-600 mb-8">
+          Let’s discuss your financial future. Reach out now to schedule a consultation and take the first step toward optimizing your finances.
+        </p>
         <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/contact"
+          className="inline-block bg-blue-600 text-white px-8 py-4 rounded-full text-xl font-semibold shadow-lg hover:bg-blue-700 transition duration-300"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
+          Contact Me
         </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
     </div>
   );
-}
+};
+
+export default HomePage;
