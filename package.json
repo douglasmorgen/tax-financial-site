@@ -8,24 +8,22 @@
     "start": "next start",
     "lint": "next lint",
     "vercel-build": "prisma migrate deploy && next build",
-    "postinstall": "prisma generate && npm install --legacy-peer-deps"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
     "axios": "^1.8.4",
     "next": "^15.2.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-google-recaptcha": "^3.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-google-recaptcha-v3": "^1.10.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/react-google-recaptcha": "^2.1.9",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.4",
     "prisma": "^6.5.0",
