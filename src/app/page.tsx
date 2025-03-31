@@ -16,7 +16,7 @@ const HomePage = () => {
       <section className="mb-16 text-center">
         <h3 className="text-4xl font-semibold text-gray-900 mb-8">Why Choose Me?</h3>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          I specialize in creating personalized financial plans that work for you. Whether it’s maximizing your tax efficiency or understanding the intricacies of equity compensation, I’m here to guide you through whatever you're facing next.
+          I specialize in creating personalized financial plans that work for you. Whether it&apos;s maximizing your tax efficiency or understanding the intricacies of equity compensation, I&apos;m here to guide you through whatever you&apos;re facing next.
         </p>
       </section>      
 
@@ -37,7 +37,7 @@ const HomePage = () => {
         <div className="space-y-4 text-center">
           <h3 className="text-3xl font-semibold text-gray-900">Cap Table Management</h3>
           <p className="text-lg text-gray-600">
-            I’ll help you manage your startup’s cap table, ensuring clarity and control as your company grows.
+            I&apos;ll help you manage your startup&apos;s cap table, ensuring clarity and control as your company grows.
           </p>
         </div>
         <div className="space-y-4 text-center">
@@ -52,7 +52,7 @@ const HomePage = () => {
       <section className="text-center">
         <h2 className="text-3xl font-semibold text-gray-900 mb-4">Ready to Get Started?</h2>
         <p className="text-lg text-gray-600 mb-8">
-          Let’s discuss your financial future. Reach out now to schedule a consultation and take the first step toward optimizing your finances.
+          Let&apos;s discuss your financial future. Reach out now to schedule a consultation and take the first step toward optimizing your finances.
         </p>
         <a
           href="/contact"
