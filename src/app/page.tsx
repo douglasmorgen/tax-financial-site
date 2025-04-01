@@ -3,7 +3,6 @@ import React from 'react';
 const HomePage = () => {
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-      {/* Header Section */}
       <header className="text-center mb-16">
         <h2 className="text-3xl font-bold text-gray-900 leading-tight">
           Expert Tax, Financial & Investment Planning for Tech Professionals
@@ -20,7 +19,6 @@ const HomePage = () => {
         </p>
       </section>      
 
-      {/* Expertise Section */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
         <div className="space-y-4 text-center">
           <h3 className="text-3xl font-semibold text-gray-900">Tax & Financial Planning</h3>
@@ -48,7 +46,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Call to Action Section */}
       <section className="text-center">
         <h2 className="text-3xl font-semibold text-gray-900 mb-4">Ready to Get Started?</h2>
         <p className="text-lg text-gray-600 mb-8">
