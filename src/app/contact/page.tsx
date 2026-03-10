@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useCallback } from 'react';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import axios from 'axios';
 
 const ContactForm = () => {
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -10,10 +9,15 @@ const ContactForm = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+
+      if (isSubmitting) {
+        return;
+      }
 
       if (!executeRecaptcha) {
         setError('ReCAPTCHA not yet available. Please try again later.');
@@ -21,26 +25,39 @@ const ContactForm = () => {
       }
 
       try {
+        setIsSubmitting(true);
+        setError('');
+        setSuccess('');
         const recaptchaToken = await executeRecaptcha('contact_form');
 
-        const response = await axios.post('/api/contact', {
-          name,
-          email,
-          message,
-          recaptchaToken,
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            message,
+            recaptchaToken,
+          }),
         });
 
-        if (response.status === 200) {
+        if (response.ok) {
           setSuccess('Thank you for reaching out! We’ll get back to you as soon as possible.');
           setName('');
           setEmail('');
           setMessage('');
+        } else {
+          throw new Error('Request failed');
         }
       } catch {
         setError('Oops! Something went wrong. Please try again later.');
+      } finally {
+        setIsSubmitting(false);
       }
     },
-    [executeRecaptcha, name, email, message]
+    [executeRecaptcha, isSubmitting, name, email, message]
   );
 
   return (
@@ -84,6 +101,7 @@ const ContactForm = () => {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            disabled={isSubmitting}
             className="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
             required
           />
@@ -98,6 +116,7 @@ const ContactForm = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isSubmitting}
             className="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
             required
           />
@@ -111,6 +130,7 @@ const ContactForm = () => {
             id="message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            disabled={isSubmitting}
             className="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
             required
           />
@@ -118,9 +138,14 @@ const ContactForm = () => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-semibold shadow-lg hover:bg-blue-700 transition duration-300"
+          disabled={isSubmitting}
+          className={`w-full rounded-lg py-3 text-xl font-semibold text-white shadow-lg transition duration-300 ${
+            isSubmitting
+              ? 'cursor-not-allowed bg-slate-400'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
-          Send Message
+          {isSubmitting ? 'Sending...' : 'Send Message'}
         </button>
       </form>
     </div>

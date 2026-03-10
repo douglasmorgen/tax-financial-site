@@ -13,9 +13,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DocumentType {
+  CLIENT_UPLOAD
+  ADMIN_RETURN
+}
+
+enum DocumentCategory {
+  W2
+  W2G
+  FORM_1099_INT
+  FORM_1099_DIV
+  FORM_1099_B
+  FORM_1099_R
+  FORM_1099_MISC
+  FORM_1099_NEC
+  FORM_1099_G
+  FORM_1098
+  FORM_1095
+  K1
+  BROKERAGE_STATEMENT
+  BANK_STATEMENT
+  CRYPTO_STATEMENT
+  RETIREMENT_STATEMENT
+  PRIOR_YEAR_RETURN
+  ESTIMATED_TAX_PAYMENT
+  ID_DOCUMENT
+  IRS_NOTICE
+  COMPLETED_RETURN
+  OTHER
+}
+
 // Model for storing contact messages (user inquiries or messages)
 model ContactMessage {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   email     String
   message   String
@@ -24,10 +54,41 @@ model ContactMessage {
 
 // Model for storing leads captured from forms (e.g., signup forms, landing pages)
 model LeadCapture {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email     String   @unique
-  name      String?
-  source    String?
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String   @unique
+  name        String?
+  source      String?
   phoneNumber String?
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Client {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  email           String     @unique
+  address         String?
+  phoneNumber     String?
+  emailVerifiedAt DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  documents       Document[]
+}
+
+model Document {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId     String       @db.Uuid
+  type         DocumentType
+  category     DocumentCategory
+  taxYear      Int
+  issuerName   String?
+  fileName     String
+  contentType  String
+  sizeBytes    Int
+  storageKey   String       @unique
+  uploadedBy   String
+  uploadedAt   DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }

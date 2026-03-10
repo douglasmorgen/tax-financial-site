@@ -12,7 +12,13 @@ export default function Header() {
         <Link href="/contact" className="text-lg font-semibold text-gray-800 hover:text-blue-600">
           Contact
         </Link>
+        <Link href="/tax-appointment-checklist" className="text-lg font-semibold text-gray-800 hover:text-blue-600">
+          Tax Checklist
+        </Link>
+        <Link href="/portal/login" className="text-lg font-semibold text-gray-800 hover:text-blue-600">
+          Client Portal
+        </Link>
       </nav>
     </header>
   );
-} 
+}

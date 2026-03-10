@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { prisma } from "../../../lib/prisma";
 import { validateRecaptcha } from "../../../lib/recaptcha";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const createContactMessage = async (name: string, email: string, message: string) => {
   return prisma.contactMessage.create({
@@ -28,6 +28,11 @@ const createLead = async (name: string, email: string) => {
 };
 
 const sendEmail = async (name: string, email: string, message: string) => {
+  if (!resend) {
+    console.warn("Skipping contact email because RESEND_API_KEY is not configured");
+    return;
+  }
+
   const { data, error } = await resend.emails.send({
     from: "onboarding@dougmorgen.com",
     to: "doug@dougmorgen.com",
@@ -42,14 +47,10 @@ const sendEmail = async (name: string, email: string, message: string) => {
 
   if (error) {
     console.error("Error sending email:", error);
-    return NextResponse.json(
-      { message: error.message },
-      { status: 500 }
-    );
+    return;
   }
 
   console.log("Email sent:", data);
-  return data;
 };
 
 export async function POST(req: Request) {
@@ -63,15 +64,14 @@ export async function POST(req: Request) {
     );
   }
 
-  const emailResult = await sendEmail(name, email, message);
-  if (emailResult instanceof NextResponse) {
-    return emailResult;
-  }
-
   await Promise.all([
     createContactMessage(name, email, message),
     createLead(name, email),
   ]);
+
+  void sendEmail(name, email, message).catch((error) => {
+    console.error("Background contact email failed:", error);
+  });
 
   return NextResponse.json({
     message: `Your message from ${name} has been sent successfully!`,
