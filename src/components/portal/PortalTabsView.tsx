@@ -13,6 +13,7 @@ type PortalDocument = {
   category: DocumentCategory;
   taxYear: number;
   issuerName: string | null;
+  documentLabel?: string | null;
   uploadedAt: string;
 };
 
@@ -371,6 +372,12 @@ export function PortalTabsView({
                           {document.taxYear} • {getDocumentCategoryLabel(document.category)} • Uploaded{" "}
                           {new Date(document.uploadedAt).toLocaleString()}
                         </p>
+                        {document.documentLabel ? (
+                          <p className="mt-1 text-xs font-medium text-emerald-700">Document type: {document.documentLabel}</p>
+                        ) : null}
+                        {document.issuerName ? (
+                          <p className="mt-1 text-xs font-medium text-emerald-700">State: {document.issuerName}</p>
+                        ) : null}
                       </div>
                       <a
                         href={`/api/client/documents/${document.id}/download`}

@@ -81,14 +81,15 @@ model Document {
   type         DocumentType
   category     DocumentCategory
   taxYear      Int
-  issuerName   String?
-  fileName     String
-  contentType  String
-  sizeBytes    Int
-  storageKey   String       @unique
-  uploadedBy   String
-  uploadedAt   DateTime     @default(now())
-  createdAt    DateTime     @default(now())
+  issuerName      String?
+  documentLabel   String?
+  fileName        String
+  contentType     String
+  sizeBytes       Int
+  storageKey      String       @unique
+  uploadedBy      String
+  uploadedAt      DateTime     @default(now())
+  createdAt       DateTime     @default(now())
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }

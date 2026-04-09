@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       taxYear,
       type: DocumentType.CLIENT_UPLOAD,
       contentType,
+      originalFileName: file.name,
     });
 
     const storageKey = await uploadDocumentToStorage({

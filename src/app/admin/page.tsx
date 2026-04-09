@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { DocumentType } from "@prisma/client";
+import { DocumentCategory, DocumentType } from "@prisma/client";
 import {
-  ADMIN_DOCUMENT_CATEGORIES,
+  FINISHED_RETURN_TYPES,
   getDefaultTaxYear,
   getDocumentCategoryLabel,
   getTaxYearChoices,
+  US_STATE_OPTIONS,
 } from "@/lib/document-options";
 import { prisma } from "@/lib/prisma";
 
@@ -136,30 +137,37 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 </select>
               </label>
               <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span>Category</span>
+                <span>Return type</span>
                 <select
-                  name="category"
+                  name="documentLabel"
                   required
-                  defaultValue={ADMIN_DOCUMENT_CATEGORIES[0]}
+                  defaultValue={FINISHED_RETURN_TYPES[0]}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
                 >
-                  {ADMIN_DOCUMENT_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>
-                      {getDocumentCategoryLabel(category)}
+                  {FINISHED_RETURN_TYPES.map((returnType) => (
+                    <option key={returnType} value={returnType}>
+                      {returnType}
                     </option>
                   ))}
                 </select>
               </label>
               <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span>Employer / Brokerage / Bank (optional)</span>
-                <input
-                  name="issuerName"
-                  type="text"
-                  maxLength={120}
-                  placeholder="e.g. Fidelity, Schwab, Chase"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
-                />
+                <span>State</span>
+                <select
+                  name="stateCode"
+                  required
+                  defaultValue=""
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
+                >
+                  <option value="">Select state</option>
+                  {US_STATE_OPTIONS.map((state) => (
+                    <option key={state.code} value={state.code}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
               </label>
+              <input type="hidden" name="category" value={DocumentCategory.COMPLETED_RETURN} />
               <label className="space-y-2 text-sm font-medium text-slate-700">
                 <span>Return file</span>
                 <input
@@ -278,8 +286,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                     <p className="text-xs text-emerald-700">
                                       {document.taxYear} • {getDocumentCategoryLabel(document.category)} • Uploaded {new Date(document.uploadedAt).toLocaleString()}
                                     </p>
+                                    {document.documentLabel ? (
+                                      <p className="text-xs text-emerald-700">Document type: {document.documentLabel}</p>
+                                    ) : null}
                                     {document.issuerName ? (
-                                      <p className="text-xs text-emerald-700">Institution: {document.issuerName}</p>
+                                      <p className="text-xs text-emerald-700">State: {document.issuerName}</p>
                                     ) : null}
                                   </div>
                                   <div className="flex items-center gap-3">

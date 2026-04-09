@@ -49,6 +49,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
       category: document.category,
       taxYear: document.taxYear,
       issuerName: document.issuerName,
+      documentLabel: document.documentLabel,
       uploadedAt: document.uploadedAt.toISOString(),
     }));
   const needsProfile = !client.address || !client.phoneNumber;

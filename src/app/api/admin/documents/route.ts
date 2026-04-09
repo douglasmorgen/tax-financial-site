@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { DocumentCategory, DocumentType } from "@prisma/client";
-import { ADMIN_DOCUMENT_CATEGORIES } from "@/lib/document-options";
+import { ADMIN_DOCUMENT_CATEGORIES, FINISHED_RETURN_TYPES, US_STATE_CODES } from "@/lib/document-options";
 import { buildStoredFileName } from "@/lib/document-file";
 import { prisma } from "@/lib/prisma";
 import { uploadDocumentToStorage } from "@/lib/storage";
@@ -19,7 +19,8 @@ export async function POST(request: Request) {
   const clientId = formData.get("clientId")?.toString() || "";
   const category = formData.get("category")?.toString() as DocumentCategory | undefined;
   const taxYear = Number.parseInt(formData.get("taxYear")?.toString() || "", 10);
-  const issuerName = formData.get("issuerName")?.toString().trim() || null;
+  const stateCode = formData.get("stateCode")?.toString().trim().toUpperCase() || "";
+  const documentLabel = formData.get("documentLabel")?.toString().trim() || "";
   const file = formData.get("file");
 
   if (!clientId || !category || !Number.isInteger(taxYear) || !(file instanceof File)) {
@@ -34,6 +35,14 @@ export async function POST(request: Request) {
     return adminRedirect(request, taxYear, "error", "invalid-document-size");
   }
 
+  if (!FINISHED_RETURN_TYPES.includes(documentLabel as (typeof FINISHED_RETURN_TYPES)[number])) {
+    return adminRedirect(request, taxYear, "error", "invalid-return-type");
+  }
+
+  if (!stateCode || !US_STATE_CODES.has(stateCode)) {
+    return adminRedirect(request, taxYear, "error", "invalid-state");
+  }
+
   try {
     const contentType = file.type || "application/octet-stream";
     const storedFileName = buildStoredFileName({
@@ -41,6 +50,9 @@ export async function POST(request: Request) {
       taxYear,
       type: DocumentType.ADMIN_RETURN,
       contentType,
+      originalFileName: file.name,
+      documentLabel,
+      stateCode,
     });
 
     const storageKey = await uploadDocumentToStorage({
@@ -56,7 +68,8 @@ export async function POST(request: Request) {
         type: DocumentType.ADMIN_RETURN,
         category,
         taxYear,
-        issuerName,
+        issuerName: stateCode,
+        documentLabel,
         fileName: storedFileName,
         contentType,
         sizeBytes: file.size,
