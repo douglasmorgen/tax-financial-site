@@ -19,8 +19,8 @@ export async function POST(request: Request) {
   const clientId = formData.get("clientId")?.toString() || "";
   const category = formData.get("category")?.toString() as DocumentCategory | undefined;
   const taxYear = Number.parseInt(formData.get("taxYear")?.toString() || "", 10);
+  const returnType = formData.get("returnType")?.toString().trim() || "";
   const stateCode = formData.get("stateCode")?.toString().trim().toUpperCase() || "";
-  const documentLabel = formData.get("documentLabel")?.toString().trim() || "";
   const file = formData.get("file");
 
   if (!clientId || !category || !Number.isInteger(taxYear) || !(file instanceof File)) {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return adminRedirect(request, taxYear, "error", "invalid-document-size");
   }
 
-  if (!isFinishedReturnType(documentLabel)) {
+  if (!isFinishedReturnType(returnType)) {
     return adminRedirect(request, taxYear, "error", "invalid-return-type");
   }
 
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       type: DocumentType.ADMIN_RETURN,
       contentType,
       originalFileName: file.name,
-      documentLabel,
+      returnType,
       stateCode,
     });
 
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         category,
         taxYear,
         issuerName: stateCode,
-        documentLabel,
+        documentLabel: returnType,
         fileName: storedFileName,
         contentType,
         sizeBytes: file.size,

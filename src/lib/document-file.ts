@@ -21,7 +21,7 @@ export function buildStoredFileName(params: {
   type: DocumentType;
   contentType: string;
   originalFileName?: string;
-  documentLabel?: string | null;
+  returnType?: string | null;
   stateCode?: string | null;
 }) {
   const typeSlug = params.type === DocumentType.ADMIN_RETURN ? "completed-return" : "source-document";
@@ -30,11 +30,11 @@ export function buildStoredFileName(params: {
   const baseName = params.originalFileName
     ? sanitizeFileName(params.originalFileName.replace(/\.[^/.]+$/, ""))
     : "document";
-  const labelSlug = params.documentLabel ? sanitizeFileName(params.documentLabel.toLowerCase()) : "";
+  const returnTypeSlug = params.returnType ? sanitizeFileName(params.returnType.toLowerCase()) : "";
   const stateSlug = params.stateCode ? sanitizeFileName(params.stateCode.toLowerCase()) : "";
   const timestampSuffix = Date.now().toString().slice(-6);
   const uniqueSuffix = randomUUID().slice(0, 8);
-  const metadataSlug = [labelSlug, stateSlug].filter(Boolean).join("-");
+  const metadataSlug = [returnTypeSlug, stateSlug].filter(Boolean).join("-");
   const fileNameCore = metadataSlug
     ? `${params.taxYear}-${categorySlug}-${metadataSlug}-${baseName}-${typeSlug}`
     : `${params.taxYear}-${categorySlug}-${baseName}-${typeSlug}`;

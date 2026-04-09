@@ -139,7 +139,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <label className="space-y-2 text-sm font-medium text-slate-700">
                 <span>Return type</span>
                 <select
-                  name="documentLabel"
+                  name="returnType"
                   required
                   defaultValue={FINISHED_RETURN_TYPES[0]}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
