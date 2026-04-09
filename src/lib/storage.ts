@@ -49,7 +49,12 @@ export async function uploadDocumentToStorage(params: {
   return key;
 }
 
-export async function createDownloadResponse(storageKey: string, fileName: string, contentType: string) {
+async function createDocumentResponse(
+  storageKey: string,
+  fileName: string,
+  contentType: string,
+  dispositionType: "attachment" | "inline",
+) {
   const s3 = createS3Client();
   const result = await s3.send(
     new GetObjectCommand({
@@ -68,7 +73,7 @@ export async function createDownloadResponse(storageKey: string, fileName: strin
     return new Response(body.transformToWebStream(), {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Content-Disposition": `${dispositionType}; filename="${fileName}"`,
       },
     });
   }
@@ -83,9 +88,17 @@ export async function createDownloadResponse(storageKey: string, fileName: strin
   return new Response(Buffer.concat(chunks), {
     headers: {
       "Content-Type": contentType,
-      "Content-Disposition": `attachment; filename="${fileName}"`,
+      "Content-Disposition": `${dispositionType}; filename="${fileName}"`,
     },
   });
+}
+
+export async function createDownloadResponse(storageKey: string, fileName: string, contentType: string) {
+  return createDocumentResponse(storageKey, fileName, contentType, "attachment");
+}
+
+export async function createInlineViewResponse(storageKey: string, fileName: string, contentType: string) {
+  return createDocumentResponse(storageKey, fileName, contentType, "inline");
 }
 
 export async function deleteDocumentFromStorage(storageKey: string) {

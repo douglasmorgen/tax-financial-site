@@ -169,6 +169,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <a
+                                      href={`/api/admin/documents/${document.id}/view`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-xs font-semibold text-slate-700 underline-offset-4 hover:underline"
+                                    >
+                                      View
+                                    </a>
+                                    <a
                                       href={`/api/admin/documents/${document.id}/download`}
                                       className="text-xs font-semibold text-slate-700 underline-offset-4 hover:underline"
                                     >
@@ -214,6 +222,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                     ) : null}
                                   </div>
                                   <div className="flex items-center gap-3">
+                                    <a
+                                      href={`/api/admin/documents/${document.id}/view`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-xs font-semibold text-emerald-900 underline-offset-4 hover:underline"
+                                    >
+                                      View
+                                    </a>
                                     <a
                                       href={`/api/admin/documents/${document.id}/download`}
                                       className="text-xs font-semibold text-emerald-900 underline-offset-4 hover:underline"

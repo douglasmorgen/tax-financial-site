@@ -16,6 +16,7 @@ type AdminReturnUploadFormProps = {
 
 export function AdminReturnUploadForm({ clients, taxYearChoices, selectedTaxYear }: AdminReturnUploadFormProps) {
   const [returnType, setReturnType] = useState<string>(FINISHED_RETURN_TYPES[0]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const requiresState = useMemo(() => doesReturnTypeRequireState(returnType), [returnType]);
 
   return (
@@ -23,6 +24,7 @@ export function AdminReturnUploadForm({ clients, taxYearChoices, selectedTaxYear
       action="/api/admin/documents"
       method="post"
       encType="multipart/form-data"
+      onSubmit={() => setIsSubmitting(true)}
       className="mt-6 space-y-4"
     >
       <label className="space-y-2 text-sm font-medium text-slate-700">
@@ -101,7 +103,11 @@ export function AdminReturnUploadForm({ clients, taxYearChoices, selectedTaxYear
       </label>
       <button
         type="submit"
-        className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
+        disabled={isSubmitting}
+        className={`w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white transition ${isSubmitting
+          ? "cursor-not-allowed bg-slate-400"
+          : "bg-emerald-600 hover:bg-emerald-500"
+          }`}
       >
         Upload Return
       </button>

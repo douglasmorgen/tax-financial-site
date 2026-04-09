@@ -330,6 +330,14 @@ export function PortalTabsView({
                           </div>
                           <div className="flex items-center gap-3">
                             <a
+                              href={`/api/client/documents/${document.id}/view`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="cursor-pointer text-xs font-semibold text-slate-700 underline-offset-4 hover:underline"
+                            >
+                              View
+                            </a>
+                            <a
                               href={`/api/client/documents/${document.id}/download`}
                               onClick={(event) => handleDownloadClick(event, document.id)}
                               aria-disabled={downloadClicked}
@@ -390,17 +398,38 @@ export function PortalTabsView({
                           <p className="mt-1 text-xs font-medium text-emerald-700">State: {document.issuerName}</p>
                         ) : null}
                       </div>
-                      <a
-                        href={`/api/client/documents/${document.id}/download`}
-                        onClick={(event) => handleDownloadClick(event, document.id)}
-                        aria-disabled={clickedDownloadIds.has(document.id)}
-                        className={`rounded-full px-4 py-2 text-xs font-semibold text-white ${clickedDownloadIds.has(document.id)
-                          ? "pointer-events-none cursor-not-allowed bg-slate-400"
-                          : "cursor-pointer bg-emerald-600 hover:bg-emerald-500"
-                          }`}
-                      >
-                        Download
-                      </a>
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={`/api/client/documents/${document.id}/view`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-semibold text-emerald-900 underline-offset-4 hover:underline"
+                        >
+                          View
+                        </a>
+                        <a
+                          href={`/api/client/documents/${document.id}/download`}
+                          onClick={(event) => handleDownloadClick(event, document.id)}
+                          aria-disabled={clickedDownloadIds.has(document.id)}
+                          className={`rounded-full px-4 py-2 text-xs font-semibold text-white ${clickedDownloadIds.has(document.id)
+                            ? "pointer-events-none cursor-not-allowed bg-slate-400"
+                            : "cursor-pointer bg-emerald-600 hover:bg-emerald-500"
+                            }`}
+                        >
+                          Download your copy
+                        </a>
+                        <button
+                          type="button"
+                          disabled={deletingDocumentIds.has(document.id)}
+                          onClick={() => handleDeleteDocument(document.id)}
+                          className={`text-xs font-semibold underline-offset-4 ${deletingDocumentIds.has(document.id)
+                            ? "cursor-not-allowed text-slate-400"
+                            : "cursor-pointer text-rose-700 hover:underline"
+                            }`}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </li>
                 ))

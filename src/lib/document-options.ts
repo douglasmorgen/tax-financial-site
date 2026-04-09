@@ -31,7 +31,7 @@ export const ADMIN_DOCUMENT_CATEGORIES: DocumentCategory[] = [
 
 export const FINISHED_RETURN_TYPES = [
   "State signature page",
-  "Finished federal return",
+  "Completed federal return",
   "Completed state return",
   "Federal filing instructions",
   "State filing instructions",
@@ -42,7 +42,6 @@ export const FINISHED_RETURN_TYPES = [
   "Estimated tax vouchers",
   "Payment voucher",
   "Amended return (Form 1040-X)",
-  "Notice response package",
 ] as const;
 
 export const FINISHED_RETURN_TYPES_REQUIRING_STATE = new Set<string>([
