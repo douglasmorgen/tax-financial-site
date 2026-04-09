@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { DocumentCategory, DocumentType } from "@prisma/client";
-import { ADMIN_DOCUMENT_CATEGORIES, FINISHED_RETURN_TYPES, US_STATE_CODES } from "@/lib/document-options";
+import { ADMIN_DOCUMENT_CATEGORIES, isFinishedReturnType, isUSStateCode } from "@/lib/document-options";
 import { buildStoredFileName } from "@/lib/document-file";
 import { prisma } from "@/lib/prisma";
 import { uploadDocumentToStorage } from "@/lib/storage";
@@ -35,11 +35,11 @@ export async function POST(request: Request) {
     return adminRedirect(request, taxYear, "error", "invalid-document-size");
   }
 
-  if (!FINISHED_RETURN_TYPES.includes(documentLabel as (typeof FINISHED_RETURN_TYPES)[number])) {
+  if (!isFinishedReturnType(documentLabel)) {
     return adminRedirect(request, taxYear, "error", "invalid-return-type");
   }
 
-  if (!stateCode || !US_STATE_CODES.has(stateCode)) {
+  if (!stateCode || !isUSStateCode(stateCode)) {
     return adminRedirect(request, taxYear, "error", "invalid-state");
   }
 

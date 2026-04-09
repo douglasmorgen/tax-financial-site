@@ -100,7 +100,17 @@ export const US_STATE_OPTIONS = [
   { code: "WY", name: "Wyoming" },
 ] as const;
 
-export const US_STATE_CODES = new Set(US_STATE_OPTIONS.map((state) => state.code));
+export type USStateCode = (typeof US_STATE_OPTIONS)[number]["code"];
+
+export const US_STATE_CODES = new Set<USStateCode>(US_STATE_OPTIONS.map((state) => state.code));
+
+export function isFinishedReturnType(value: string): value is FinishedReturnType {
+  return FINISHED_RETURN_TYPES.some((option) => option === value);
+}
+
+export function isUSStateCode(value: string): value is USStateCode {
+  return US_STATE_CODES.has(value as USStateCode);
+}
 
 export function getDocumentCategoryLabel(category: DocumentCategory): string {
   switch (category) {
