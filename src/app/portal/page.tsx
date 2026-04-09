@@ -35,7 +35,6 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     .filter((document) => document.type === DocumentType.CLIENT_UPLOAD)
     .map((document) => ({
       id: document.id,
-      fileName: document.fileName,
       category: document.category,
       taxYear: document.taxYear,
       issuerName: document.issuerName,
@@ -45,7 +44,6 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     .filter((document) => document.type === DocumentType.ADMIN_RETURN)
     .map((document) => ({
       id: document.id,
-      fileName: document.fileName,
       category: document.category,
       taxYear: document.taxYear,
       issuerName: document.issuerName,

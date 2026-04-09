@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { DocumentCategory, DocumentType } from "@prisma/client";
-import { ADMIN_DOCUMENT_CATEGORIES, isFinishedReturnType, isUSStateCode } from "@/lib/document-options";
+import {
+  ADMIN_DOCUMENT_CATEGORIES,
+  doesReturnTypeRequireState,
+  isFinishedReturnType,
+  isUSStateCode,
+} from "@/lib/document-options";
 import { buildStoredFileName } from "@/lib/document-file";
 import { prisma } from "@/lib/prisma";
 import { uploadDocumentToStorage } from "@/lib/storage";
@@ -39,9 +44,13 @@ export async function POST(request: Request) {
     return adminRedirect(request, taxYear, "error", "invalid-return-type");
   }
 
-  if (!stateCode || !isUSStateCode(stateCode)) {
+  const requiresState = doesReturnTypeRequireState(returnType);
+
+  if (requiresState && (!stateCode || !isUSStateCode(stateCode))) {
     return adminRedirect(request, taxYear, "error", "invalid-state");
   }
+
+  const normalizedStateCode = requiresState ? stateCode : null;
 
   try {
     const contentType = file.type || "application/octet-stream";
@@ -50,9 +59,8 @@ export async function POST(request: Request) {
       taxYear,
       type: DocumentType.ADMIN_RETURN,
       contentType,
-      originalFileName: file.name,
       returnType,
-      stateCode,
+      stateCode: normalizedStateCode,
     });
 
     const storageKey = await uploadDocumentToStorage({
@@ -68,7 +76,7 @@ export async function POST(request: Request) {
         type: DocumentType.ADMIN_RETURN,
         category,
         taxYear,
-        issuerName: stateCode,
+        issuerName: normalizedStateCode,
         documentLabel: returnType,
         fileName: storedFileName,
         contentType,

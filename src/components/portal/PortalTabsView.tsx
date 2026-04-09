@@ -9,7 +9,6 @@ type PortalTab = "profile" | "upload" | "returns";
 
 type PortalDocument = {
   id: string;
-  fileName: string;
   category: DocumentCategory;
   taxYear: number;
   issuerName: string | null;
@@ -111,6 +110,18 @@ export function PortalTabsView({
     setClickedDownloadIds((ids) => new Set(ids).add(documentId));
   }
 
+  function getSafeUploadTitle(document: PortalDocument) {
+    return `${getDocumentCategoryLabel(document.category)} • Tax Year ${document.taxYear}`;
+  }
+
+  function getSafeReturnTitle(document: PortalDocument) {
+    if (document.documentLabel) {
+      return document.documentLabel;
+    }
+
+    return `Finished Return • Tax Year ${document.taxYear}`;
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 px-6 py-8">
       <div className="mx-auto max-w-6xl space-y-8">
@@ -145,7 +156,7 @@ export function PortalTabsView({
               Upload Documents
             </button>
             <button type="button" onClick={() => setActiveTab("returns")} className={tabClassName("returns")}>
-              Finished Returns
+              Completed Documents
             </button>
           </div>
         </nav>
@@ -309,7 +320,7 @@ export function PortalTabsView({
                             <p className="mb-2 inline-flex rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
                               {getDocumentCategoryLabel(document.category)} • Tax Year {document.taxYear}
                             </p>
-                            <p className="font-semibold text-slate-900">{document.fileName}</p>
+                            <p className="font-semibold text-slate-900">{getSafeUploadTitle(document)}</p>
                             <p className="text-xs text-slate-500">
                               Uploaded {new Date(document.uploadedAt).toLocaleString()}
                             </p>
@@ -353,21 +364,21 @@ export function PortalTabsView({
 
         {activeTab === "returns" ? (
           <section className="rounded-3xl bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">Finished Returns</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">Completed Documents</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Download your completed returns once your taxes are done.
+              Download your completed documents once your taxes are done.
             </p>
             <ul className="mt-5 space-y-3">
               {finishedReturns.length === 0 ? (
                 <li className="rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                  No finished returns are available yet.
+                  No completed documents are available yet.
                 </li>
               ) : (
                 finishedReturns.map((document) => (
                   <li key={document.id} className="rounded-2xl bg-emerald-50 px-4 py-4 text-sm text-emerald-900">
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <p className="font-semibold">{document.fileName}</p>
+                        <p className="font-semibold">{getSafeReturnTitle(document)}</p>
                         <p className="text-xs text-emerald-700">
                           {document.taxYear} • {getDocumentCategoryLabel(document.category)} • Uploaded{" "}
                           {new Date(document.uploadedAt).toLocaleString()}

@@ -45,6 +45,14 @@ export const FINISHED_RETURN_TYPES = [
   "Notice response package",
 ] as const;
 
+export const FINISHED_RETURN_TYPES_REQUIRING_STATE = new Set<string>([
+  "State signature page",
+  "Completed state return",
+  "State filing instructions",
+  "State e-file authorization",
+  "State extension",
+]);
+
 export const US_STATE_OPTIONS = [
   { code: "AL", name: "Alabama" },
   { code: "AK", name: "Alaska" },
@@ -106,6 +114,10 @@ export function isUSStateCode(value: string): boolean {
 
 export function isFinishedReturnType(value: string): boolean {
   return FINISHED_RETURN_TYPES.some((option) => option === value);
+}
+
+export function doesReturnTypeRequireState(value: string): boolean {
+  return FINISHED_RETURN_TYPES_REQUIRING_STATE.has(value);
 }
 
 export function getDocumentCategoryLabel(category: DocumentCategory): string {

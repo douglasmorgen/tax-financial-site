@@ -20,24 +20,22 @@ export function buildStoredFileName(params: {
   taxYear: number;
   type: DocumentType;
   contentType: string;
-  originalFileName?: string;
   returnType?: string | null;
   stateCode?: string | null;
 }) {
   const typeSlug = params.type === DocumentType.ADMIN_RETURN ? "completed-return" : "source-document";
   const categorySlug = params.category.toLowerCase();
   const extension = getFileExtension(params.contentType);
-  const baseName = params.originalFileName
-    ? sanitizeFileName(params.originalFileName.replace(/\.[^/.]+$/, ""))
-    : "document";
   const returnTypeSlug = params.returnType ? sanitizeFileName(params.returnType.toLowerCase()) : "";
-  const stateSlug = params.stateCode ? sanitizeFileName(params.stateCode.toLowerCase()) : "";
-  const timestampSuffix = Date.now().toString().slice(-6);
-  const uniqueSuffix = randomUUID().slice(0, 8);
-  const metadataSlug = [returnTypeSlug, stateSlug].filter(Boolean).join("-");
-  const fileNameCore = metadataSlug
-    ? `${params.taxYear}-${categorySlug}-${metadataSlug}-${baseName}-${typeSlug}`
-    : `${params.taxYear}-${categorySlug}-${baseName}-${typeSlug}`;
+  const stateSlug = params.stateCode ? sanitizeFileName(params.stateCode.toUpperCase()) : "";
+  const uniqueSuffix = randomUUID().slice(0, 4);
 
-  return `${fileNameCore}-${timestampSuffix}-${uniqueSuffix}.${extension}`;
+  if (params.type === DocumentType.ADMIN_RETURN) {
+    const label = returnTypeSlug || "finished-return";
+    const statePart = stateSlug ? `-${stateSlug}` : "";
+    return `${params.taxYear}-${label}${statePart}-${uniqueSuffix}.${extension}`;
+  }
+
+  const timestampSuffix = Date.now().toString().slice(-6);
+  return `${params.taxYear}-${categorySlug}-${typeSlug}-${timestampSuffix}-${uniqueSuffix}.${extension}`;
 }

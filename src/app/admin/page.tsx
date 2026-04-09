@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { DocumentCategory, DocumentType } from "@prisma/client";
+import { DocumentType } from "@prisma/client";
 import {
-  FINISHED_RETURN_TYPES,
   getDefaultTaxYear,
   getDocumentCategoryLabel,
   getTaxYearChoices,
-  US_STATE_OPTIONS,
 } from "@/lib/document-options";
+import { AdminReturnUploadForm } from "@/components/admin/AdminReturnUploadForm";
 import { prisma } from "@/lib/prisma";
 
 type AdminPageProps = {
@@ -61,7 +60,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <p className="text-sm uppercase tracking-[0.3em] text-slate-300">Secure Client Portal</p>
           <h1 className="mt-3 text-4xl font-semibold">Admin Dashboard</h1>
           <p className="mt-3 max-w-3xl text-base text-slate-300">
-            Clients can sign up through the public portal. Use this dashboard to review uploads and store completed returns without exposing files publicly.
+            Clients can sign up through the public portal. Use this dashboard to review uploads and store completed documents without exposing files publicly.
           </p>
         </div>
 
@@ -80,7 +79,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <section className="rounded-3xl bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-semibold text-slate-900">Portal Access</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Clients create their own accounts at the public sign-up page, then use the portal to upload source documents and download finished returns.
+              Clients create their own accounts at the public sign-up page, then use the portal to upload source documents and download completed documents.
             </p>
             <div className="mt-6 space-y-3">
               <Link
@@ -96,94 +95,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </section>
 
           <section className="rounded-3xl bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">Upload Finished Return</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">Upload Completed Document</h2>
             <p className="mt-2 text-sm text-slate-600">
               Files are posted to the server and stored in your private S3 bucket with server-side encryption enabled.
             </p>
-            <form
-              action="/api/admin/documents"
-              method="post"
-              encType="multipart/form-data"
-              className="mt-6 space-y-4"
-            >
-              <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span>Client</span>
-                <select
-                  name="clientId"
-                  required
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
-                >
-                  <option value="">Select a client</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name} ({client.email})
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span>Tax year</span>
-                <select
-                  name="taxYear"
-                  required
-                  defaultValue={selectedTaxYear}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
-                >
-                  {taxYearChoices.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span>Return type</span>
-                <select
-                  name="returnType"
-                  required
-                  defaultValue={FINISHED_RETURN_TYPES[0]}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
-                >
-                  {FINISHED_RETURN_TYPES.map((returnType) => (
-                    <option key={returnType} value={returnType}>
-                      {returnType}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span>State</span>
-                <select
-                  name="stateCode"
-                  required
-                  defaultValue=""
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
-                >
-                  <option value="">Select state</option>
-                  {US_STATE_OPTIONS.map((state) => (
-                    <option key={state.code} value={state.code}>
-                      {state.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <input type="hidden" name="category" value={DocumentCategory.COMPLETED_RETURN} />
-              <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span>Return file</span>
-                <input
-                  name="file"
-                  type="file"
-                  required
-                  className="w-full rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-sm"
-                />
-              </label>
-              <button
-                type="submit"
-                className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
-              >
-                Upload Return
-              </button>
-            </form>
+            <AdminReturnUploadForm
+              clients={clients.map((client) => ({ id: client.id, name: client.name, email: client.email }))}
+              taxYearChoices={taxYearChoices}
+              selectedTaxYear={selectedTaxYear}
+            />
           </section>
         </div>
 
@@ -271,11 +191,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       </div>
 
                       <div>
-                        <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Finished returns</h4>
+                        <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Completed documents</h4>
                         <ul className="mt-3 space-y-3">
                           {finishedReturns.length === 0 ? (
                             <li className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                              No completed returns uploaded yet.
+                              No completed documents uploaded yet.
                             </li>
                           ) : (
                             finishedReturns.map((document) => (

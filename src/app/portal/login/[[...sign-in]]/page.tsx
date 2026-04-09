@@ -8,7 +8,7 @@ export default function PortalSignInPage() {
           <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Secure Client Portal</p>
           <h1 className="mt-4 text-5xl font-semibold text-slate-900">Sign in to upload and download tax documents</h1>
           <p className="mt-4 text-base text-slate-600">
-            Create an account if you are new, then use the portal to share source documents and download completed returns.
+            Create an account if you are new, then use the portal to share source documents and download completed documents.
           </p>
         </div>
         <div className="rounded-3xl bg-white p-4 shadow-sm">
