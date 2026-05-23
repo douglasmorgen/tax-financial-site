@@ -7,5 +7,14 @@ export default function PortalLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <ClerkProvider>{children}</ClerkProvider>;
+  const publishableKey =
+    process.env.CLERK_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    console.error("Missing Clerk publishable key for portal routes");
+    return <>{children}</>;
+  }
+
+  return <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>;
 }
