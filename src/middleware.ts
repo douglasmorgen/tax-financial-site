@@ -36,6 +36,9 @@ const clerk = clerkMiddleware(
     return NextResponse.next();
   },
   {
+    publishableKey:
+      process.env.CLERK_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     proxyUrl: "https://finance.dougmorgen.com",
     authorizedParties: ["https://finance.dougmorgen.com"],
   },
