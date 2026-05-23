@@ -54,26 +54,43 @@ const sendEmail = async (name: string, email: string, message: string) => {
 };
 
 export async function POST(req: Request) {
-  const { name, email, message, recaptchaToken } = await req.json();
+  try {
+    const { name, email, message, recaptchaToken } = await req.json();
 
-  const recaptchaValid = await validateRecaptcha(recaptchaToken);
-  if (!recaptchaValid) {
+    if (!name || !email || !message || !recaptchaToken) {
+      console.warn("Contact form rejected due to missing fields");
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    const recaptchaValid = await validateRecaptcha(recaptchaToken);
+    if (!recaptchaValid) {
+      console.warn("Contact form rejected due to failed reCAPTCHA verification");
+      return NextResponse.json(
+        { message: "reCAPTCHA verification failed" },
+        { status: 400 }
+      );
+    }
+
+    await Promise.all([
+      createContactMessage(name, email, message),
+      createLead(name, email),
+    ]);
+
+    void sendEmail(name, email, message).catch((error) => {
+      console.error("Background contact email failed:", error);
+    });
+
+    return NextResponse.json({
+      message: `Your message from ${name} has been sent successfully!`,
+    });
+  } catch (error) {
+    console.error("Contact form POST failed:", error);
     return NextResponse.json(
-      { message: "reCAPTCHA verification failed" },
-      { status: 400 }
+      { message: "Failed to submit contact form" },
+      { status: 500 }
     );
   }
-
-  await Promise.all([
-    createContactMessage(name, email, message),
-    createLead(name, email),
-  ]);
-
-  void sendEmail(name, email, message).catch((error) => {
-    console.error("Background contact email failed:", error);
-  });
-
-  return NextResponse.json({
-    message: `Your message from ${name} has been sent successfully!`,
-  });
 }

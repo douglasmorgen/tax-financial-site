@@ -45,19 +45,6 @@ const clerk = clerkMiddleware(
 );
 
 export default async function middleware(request: NextRequest, event: NextFetchEvent) {
-  console.log("[proxy-debug]", JSON.stringify({
-    path: request.nextUrl.pathname,
-    debugProxyHeadersSet: process.env.DEBUG_PROXY_HEADERS !== undefined,
-    debugProxyHeadersValue: process.env.DEBUG_PROXY_HEADERS ?? null,
-    host: request.headers.get("host"),
-    origin: request.headers.get("origin"),
-    xForwardedHost: request.headers.get("x-forwarded-host"),
-    xForwardedProto: request.headers.get("x-forwarded-proto"),
-    xForwardedPort: request.headers.get("x-forwarded-port"),
-    xForwardedFor: request.headers.get("x-forwarded-for"),
-    xRealIp: request.headers.get("x-real-ip"),
-  }));
-
   return clerk(request, event);
 }
 
