@@ -7,6 +7,19 @@ const isProtectedPortalRoute = createRouteMatcher(["/portal(.*)", "/api/client(.
 const isPublicPortalRoute = createRouteMatcher(["/portal/login(.*)", "/portal/sign-up(.*)"]);
 
 export default clerkMiddleware(async (auth, request: NextRequest) => {
+  if (process.env.DEBUG_PROXY_HEADERS === "true") {
+    console.log("[proxy-debug]", JSON.stringify({
+      path: request.nextUrl.pathname,
+      host: request.headers.get("host"),
+      origin: request.headers.get("origin"),
+      xForwardedHost: request.headers.get("x-forwarded-host"),
+      xForwardedProto: request.headers.get("x-forwarded-proto"),
+      xForwardedPort: request.headers.get("x-forwarded-port"),
+      xForwardedFor: request.headers.get("x-forwarded-for"),
+      xRealIp: request.headers.get("x-real-ip"),
+    }));
+  }
+
   if (isAdminRoute(request)) {
     if (!process.env.ADMIN_USER || !process.env.ADMIN_PASS) {
       console.error("ADMIN_USER and ADMIN_PASS environment variables must be set");
