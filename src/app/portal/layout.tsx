@@ -1,5 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 
+export const dynamic = "force-dynamic";
+
 export default function PortalLayout({
   children,
 }: Readonly<{
