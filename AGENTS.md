@@ -6,9 +6,15 @@ These instructions apply to the entire repository. Read `README.md` and `docs/AR
 
 - Preserve existing user changes and keep edits scoped to the request.
 - Do not create commits, push branches, or change Git remotes unless the user explicitly asks.
-- Prefer small, reviewable changes and explain meaningful tradeoffs.
+- Do not deploy, stop or restart remote applications, run remote commands, or mutate retained databases, storage, DNS, or provider configuration unless the user explicitly asks for that external action.
+- Prefer the smallest conventional implementation that satisfies the request. Do not add speculative infrastructure or compatibility hacks, and explain meaningful tradeoffs.
+- Fix root causes instead of adding placeholder artifacts or compatibility shims. Do not add `.gitkeep`, dummy files, empty assets, no-op scripts, or similar workarounds solely to satisfy a build or deployment assumption. Remove or correct the stale build or configuration reference instead.
+- Before deleting the final tracked file from a directory, search Dockerfiles, CI workflows, deployment configuration, scripts, and application code for references to that directory, then run the affected deployment build.
+- Start by inspecting `git status` and the relevant source, tests, contracts, schema, scripts, and configuration. Do not overwrite, restore, stage, or absorb unrelated worktree changes.
+- Treat the established GitHub-to-Vercel and Docker/Kamal paths as compatibility contracts. General cleanup does not authorize changes to the Dockerfile, package build/install scripts, Vercel behavior, or Kamal configuration; change them only when the task requires it.
 - Use the existing npm toolchain and committed `package-lock.json`.
 - Keep credentials, client data, database exports, certificates, and local environment files out of Git and Docker contexts.
+- Do not read or print values from ignored credential files merely to make a check pass. Inspect only required key names or presence, use synthetic values for local verification, and report missing configuration without exposing existing secrets.
 
 ## TypeScript Standards
 
@@ -75,6 +81,8 @@ npm run vercel-build
 
 Run the deploy-safety command against a disposable or explicitly designated database. It executes `prisma migrate deploy` before the Next.js build.
 
+For Dockerfile, Kamal, container-runtime, or production-dependency changes, also build for the actual deployment platform and smoke-test the final runtime stage. Use synthetic provider values and a disposable database; a successful builder stage alone is not sufficient.
+
 After dependency changes, also run:
 
 ```bash
@@ -88,3 +96,4 @@ npm ls --depth=0
 - For any failure, include the exact command and a concise error summary.
 - Call out any check that used placeholder configuration or a disposable database.
 - List unresolved security, migration, or deployment risks before handing work back.
+- Inspect `git status`, the final diff, and `git diff --check` before handoff. Report every changed or untracked file and state explicitly whether commits, pushes, deployments, or remote mutations were not performed.
