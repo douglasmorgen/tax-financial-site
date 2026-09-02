@@ -2,10 +2,13 @@
 
 import { type MouseEvent, useState } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { DocumentCategory } from "@prisma/client";
+import type { DocumentCategory } from "@/generated/prisma/enums";
+import { getPortalErrorMessage, getPortalSuccessMessage } from "@/lib/action-messages";
 import { CLIENT_DOCUMENT_CATEGORIES, getDocumentCategoryLabel } from "@/lib/document-options";
+import { DOCUMENT_FILE_INPUT_ACCEPT } from "@/lib/document-policy";
 
 type PortalTab = "profile" | "upload" | "returns";
+type TaxYearFilter = number | "all";
 
 type PortalDocument = {
   id: string;
@@ -23,14 +26,14 @@ type PortalTabsViewProps = {
     address: string | null;
     phoneNumber: string | null;
   };
-  error?: string;
-  success?: string;
+  error: string | undefined;
+  success: string | undefined;
   needsProfile: boolean;
   initialTab: PortalTab;
   selectedTaxYear: number;
-  taxYearChoices: number[];
-  uploadedDocuments: PortalDocument[];
-  finishedReturns: PortalDocument[];
+  taxYearChoices: readonly number[];
+  uploadedDocuments: readonly PortalDocument[];
+  finishedReturns: readonly PortalDocument[];
 };
 
 export function PortalTabsView({
@@ -45,23 +48,17 @@ export function PortalTabsView({
   finishedReturns,
 }: PortalTabsViewProps) {
   const [activeTab, setActiveTab] = useState<PortalTab>(initialTab);
-  const [uploadedDocumentsState, setUploadedDocumentsState] = useState(uploadedDocuments);
-  const [uploadedFilesYearFilter, setUploadedFilesYearFilter] = useState<string>(String(selectedTaxYear));
+  const [uploadedDocumentsState, setUploadedDocumentsState] = useState<readonly PortalDocument[]>(uploadedDocuments);
+  const [uploadedFilesYearFilter, setUploadedFilesYearFilter] = useState<TaxYearFilter>(selectedTaxYear);
   const [isSubmittingUpload, setIsSubmittingUpload] = useState(false);
   const [clickedDownloadIds, setClickedDownloadIds] = useState<Set<string>>(new Set());
   const [deletingDocumentIds, setDeletingDocumentIds] = useState<Set<string>>(new Set());
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
 
-  const successMessage =
-    success === "document-uploaded"
-      ? "Your document was uploaded successfully."
-      : success === "document-deleted"
-        ? "Your document was deleted successfully."
-        : success === "profile-updated"
-          ? "Your profile was updated successfully."
-          : success;
+  const successMessage = getPortalSuccessMessage(success);
+  const errorMessage = getPortalErrorMessage(error);
 
-  const tabClassName = (tab: PortalTab) =>
+  const tabClassName = (tab: PortalTab): string =>
     `cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition ${activeTab === tab
       ? "bg-slate-900 text-white"
       : "bg-slate-200 text-slate-700 hover:bg-slate-300"
@@ -69,39 +66,38 @@ export function PortalTabsView({
   const filteredUploadedDocuments =
     uploadedFilesYearFilter === "all"
       ? uploadedDocumentsState
-      : uploadedDocumentsState.filter((document) => document.taxYear === Number.parseInt(uploadedFilesYearFilter, 10));
+      : uploadedDocumentsState.filter((document) => document.taxYear === uploadedFilesYearFilter);
 
-  async function handleDeleteDocument(documentId: string) {
+  async function handleDeleteDocument(documentId: string): Promise<void> {
     if (deletingDocumentIds.has(documentId)) {
       return;
     }
 
     setDeletingDocumentIds((ids) => new Set(ids).add(documentId));
 
-    const response = await fetch(`/api/client/documents/${documentId}/delete`, {
-      method: "POST",
-    });
+    try {
+      const response = await fetch(`/api/client/documents/${documentId}/delete`, {
+        method: "POST",
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
+        throw new Error("Document deletion failed");
+      }
+
+      setUploadedDocumentsState((documents) => documents.filter((document) => document.id !== documentId));
+      setActionSuccessMessage("Your document was deleted successfully.");
+    } catch {
+      alert("Unable to delete document right now. Please try again.");
+    } finally {
       setDeletingDocumentIds((ids) => {
         const nextIds = new Set(ids);
         nextIds.delete(documentId);
         return nextIds;
       });
-      alert("Unable to delete document right now. Please try again.");
-      return;
     }
-
-    setUploadedDocumentsState((documents) => documents.filter((document) => document.id !== documentId));
-    setActionSuccessMessage("Your document was deleted successfully.");
-    setDeletingDocumentIds((ids) => {
-      const nextIds = new Set(ids);
-      nextIds.delete(documentId);
-      return nextIds;
-    });
   }
 
-  function handleDownloadClick(event: MouseEvent<HTMLAnchorElement>, documentId: string) {
+  function handleDownloadClick(event: MouseEvent<HTMLAnchorElement>, documentId: string): void {
     if (clickedDownloadIds.has(documentId)) {
       event.preventDefault();
       return;
@@ -110,11 +106,11 @@ export function PortalTabsView({
     setClickedDownloadIds((ids) => new Set(ids).add(documentId));
   }
 
-  function getSafeUploadTitle(document: PortalDocument) {
+  function getSafeUploadTitle(document: PortalDocument): string {
     return `${getDocumentCategoryLabel(document.category)} • Tax Year ${document.taxYear}`;
   }
 
-  function getSafeReturnTitle(document: PortalDocument) {
+  function getSafeReturnTitle(document: PortalDocument): string {
     if (document.documentLabel) {
       return document.documentLabel;
     }
@@ -132,7 +128,7 @@ export function PortalTabsView({
               <h1 className="mt-3 text-4xl font-semibold text-slate-900">Welcome, {client.name}</h1>
               <p className="mt-2 text-sm text-slate-600">{client.email}</p>
             </div>
-            <UserButton afterSignOutUrl="/portal/login" />
+            <UserButton />
           </div>
         </div>
 
@@ -141,9 +137,9 @@ export function PortalTabsView({
             {actionSuccessMessage ?? successMessage}
           </div>
         ) : null}
-        {error ? (
+        {errorMessage ? (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-            Action failed: {error}
+            {errorMessage}
           </div>
         ) : null}
 
@@ -175,6 +171,7 @@ export function PortalTabsView({
                 <input
                   name="name"
                   defaultValue={client.name}
+                  maxLength={120}
                   required
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
                 />
@@ -184,6 +181,7 @@ export function PortalTabsView({
                 <input
                   name="phoneNumber"
                   defaultValue={client.phoneNumber || ""}
+                  maxLength={50}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
                 />
               </label>
@@ -192,6 +190,7 @@ export function PortalTabsView({
                 <textarea
                   name="address"
                   defaultValue={client.address || ""}
+                  maxLength={1000}
                   rows={3}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
                 />
@@ -267,6 +266,7 @@ export function PortalTabsView({
                   <input
                     type="file"
                     name="file"
+                    accept={DOCUMENT_FILE_INPUT_ACCEPT}
                     required
                     className="w-full rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-sm"
                   />
@@ -290,8 +290,21 @@ export function PortalTabsView({
                 <label className="space-y-1 text-sm font-medium text-slate-700">
                   <span>Filter by year</span>
                   <select
-                    value={uploadedFilesYearFilter}
-                    onChange={(event) => setUploadedFilesYearFilter(event.target.value)}
+                    value={String(uploadedFilesYearFilter)}
+                    onChange={(event) => {
+                      const value = event.target.value;
+
+                      if (value === "all") {
+                        setUploadedFilesYearFilter("all");
+                        return;
+                      }
+
+                      const year = Number(value);
+
+                      if (taxYearChoices.includes(year)) {
+                        setUploadedFilesYearFilter(year);
+                      }
+                    }}
                     className="w-full min-w-40 rounded-2xl border border-slate-200 px-4 py-2 text-sm"
                   >
                     <option value="all">All years</option>

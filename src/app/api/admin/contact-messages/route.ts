@@ -1,20 +1,20 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../lib/prisma";
+import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   try {
     const messages = await prisma.contactMessage.findMany({
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     return NextResponse.json(messages);
   } catch (error) {
-    console.error('Error fetching contact messages:', error);
+    console.error("Error fetching contact messages:", error);
     return NextResponse.json(
-      { message: 'Failed to fetch contact messages' },
-      { status: 500 }
+      { message: "Failed to fetch contact messages" },
+      { status: 500 },
     );
   }
-} 
+}

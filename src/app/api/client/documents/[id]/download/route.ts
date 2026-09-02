@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedClient } from "@/lib/client-auth";
 import { prisma } from "@/lib/prisma";
+import { isUuid } from "@/lib/request-data";
 import { createDownloadResponse } from "@/lib/storage";
 
 export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+  _request: Request,
+  { params }: RouteContext<"/api/client/documents/[id]/download">,
+): Promise<Response> {
   const client = await getAuthenticatedClient();
 
   if (!client) {
@@ -14,6 +15,10 @@ export async function GET(
   }
 
   const { id } = await params;
+
+  if (!isUuid(id)) {
+    return NextResponse.json({ message: "Document not found" }, { status: 404 });
+  }
 
   const document = await prisma.document.findFirst({
     where: {

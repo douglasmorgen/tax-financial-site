@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "2026 Tax Appointment Checklist",
-  description: "What to upload for your 2025 tax return preparation.",
-};
+export const metadata = {
+  title: "Tax Appointment Checklist",
+  description: "An annual checklist of records to upload before tax return preparation.",
+} satisfies Metadata;
 
 const incomeItems = [
-  "W-2s from each employer and your final 2025 pay stub(s).",
+  "W-2s from each employer and your final pay stub(s) for the tax year.",
   "1099-INT and 1099-DIV for interest and dividends.",
   "1099-R for pensions, IRA distributions, and rollovers (include qualified charitable distributions if applicable).",
   "SSA-1099 for Social Security benefits.",
@@ -16,8 +16,8 @@ const incomeItems = [
   "Crypto activity reports and 1099s from your exchange/brokerage.",
   "Gambling/lottery winnings, prizes, awards, jury duty pay, and executor fees.",
   "1099-SA for HSA distributions.",
-  "Settlement statements for any real estate purchase, sale, or refinance in 2025.",
-  "Amount of PTR and/or ANCHOR rebate paid in 2025.",
+  "Settlement statements for any real estate purchase, sale, or refinance during the tax year.",
+  "Amount of any PTR and/or ANCHOR rebate paid during the tax year.",
 ];
 
 const deductionItems = [
@@ -37,8 +37,8 @@ const creditItems = [
 ];
 
 const estimatedTaxItems = [
-  "IRS and state quarterly estimated payments: amount and date for April 2025, June 2025, September 2025, and January 2026.",
-  "Do not include your January 2025 payment (that applies to tax year 2024).",
+  "IRS and state quarterly estimated payments: include the amount and date for all four installments, including the January payment made in the following calendar year.",
+  "Do not include the January payment that applied to the prior tax year.",
 ];
 
 const medicalItems = [
@@ -52,7 +52,7 @@ const medicalItems = [
   "Prescription medications.",
   "Transportation costs for medical care (ambulance, taxi, parking, tolls).",
   "Long-term care expenses.",
-  "Medical mileage from January 1, 2025 through December 31, 2025.",
+  "Medical mileage for the full tax year.",
 ];
 
 function ChecklistSection({ title, items }: { title: string; items: string[] }) {
@@ -75,8 +75,8 @@ export default function TaxAppointmentChecklistPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
       <header className="rounded-3xl bg-slate-900 p-8 text-white shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Tax Year 2025</p>
-        <h1 className="mt-3 text-4xl font-semibold">2026 Tax Appointment Checklist</h1>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Annual Tax Preparation</p>
+        <h1 className="mt-3 text-4xl font-semibold">Tax Appointment Checklist</h1>
         <p className="mt-3 text-lg text-slate-200">
           Use this as your annual prep guide before your appointment. Not every item applies to everyone, but review the
           full list so you can upload everything needed in advance.
@@ -87,14 +87,14 @@ export default function TaxAppointmentChecklistPage() {
         <h2 className="text-xl font-semibold text-blue-900">Important Reminders</h2>
         <ul className="mt-3 space-y-2 text-blue-900">
           <li>
-            If your driver&apos;s license was renewed during 2025, upload a copy or provide the issue and expiration dates.
+            If your driver&apos;s license was renewed during the tax year, upload a copy or provide the issue and expiration dates.
           </li>
           <li>
             If anyone in your household had Marketplace insurance, upload Form 1095-A. Forms 1095-B/1095-C are usually
             not required for return prep.
           </li>
           <li>
-            If your bank account changed in 2025, upload a voided check or savings statement for direct deposit/debit.
+            If your bank account changed during the tax year, upload a voided check or savings statement for direct deposit/debit.
           </li>
           <li>
             You can securely submit documents ahead of time through the{" "}

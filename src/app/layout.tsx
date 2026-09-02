@@ -14,10 +14,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Financial and Tax Panning",
-  description: "Financial and Tax Planning by Doug Morgen",
-};
+export const metadata = {
+  metadataBase: new URL("https://finance.dougmorgen.com"),
+  title: {
+    default: "Financial and Tax Planning | Doug Morgen",
+    template: "%s | Doug Morgen",
+  },
+  description: "Tax, financial, and investment planning for technology professionals and startups.",
+  openGraph: {
+    title: "Financial and Tax Planning | Doug Morgen",
+    description: "Tax, financial, and investment planning for technology professionals and startups.",
+    type: "website",
+  },
+} satisfies Metadata;
 
 export default function RootLayout({
   children,
@@ -29,7 +38,7 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   if (!publishableKey) {
-    console.error("Missing Clerk publishable key in root layout");
+    throw new Error("Missing Clerk publishable key");
   }
 
   return (
@@ -37,7 +46,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClerkProvider publishableKey={publishableKey}>
+        <ClerkProvider publishableKey={publishableKey} afterSignOutUrl="/portal/login">
           <Header />
           <main>{children}</main>
         </ClerkProvider>

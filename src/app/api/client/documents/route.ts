@@ -1,14 +1,26 @@
 import { NextResponse } from "next/server";
-import { DocumentCategory, DocumentType } from "@prisma/client";
+import { DocumentType } from "@/generated/prisma/enums";
 import { getAuthenticatedClient } from "@/lib/client-auth";
-import { CLIENT_DOCUMENT_CATEGORIES } from "@/lib/document-options";
+import {
+  getDefaultTaxYear,
+  isClientDocumentCategory,
+  isSupportedTaxYear,
+} from "@/lib/document-options";
 import { buildStoredFileName } from "@/lib/document-file";
+import {
+  isSupportedDocumentContentType,
+  MAX_DOCUMENT_UPLOAD_BYTES,
+} from "@/lib/document-policy";
 import { prisma } from "@/lib/prisma";
-import { uploadDocumentToStorage } from "@/lib/storage";
+import { parseInteger, readFormFile, readFormString } from "@/lib/request-data";
+import {
+  deleteDocumentFromStorage,
+  uploadDocumentToStorage,
+} from "@/lib/storage";
 
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+type ActionStatus = "error" | "success";
 
-function portalRedirect(request: Request, taxYear: number, status: string, value: string) {
+function portalRedirect(request: Request, taxYear: number, status: ActionStatus, value: string): NextResponse {
   const url = new URL("/portal", request.url);
   url.searchParams.set("tab", "upload");
   url.searchParams.set("taxYear", String(taxYear));
@@ -16,7 +28,7 @@ function portalRedirect(request: Request, taxYear: number, status: string, value
   return NextResponse.redirect(url, 303);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   const client = await getAuthenticatedClient();
 
   if (!client) {
@@ -24,35 +36,50 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
-  const category = formData.get("category")?.toString() as DocumentCategory | undefined;
-  const taxYear = Number.parseInt(formData.get("taxYear")?.toString() || "", 10);
-  const issuerName = formData.get("issuerName")?.toString().trim() || null;
-  const file = formData.get("file");
+  const category = readFormString(formData, "category");
+  const taxYear = parseInteger(readFormString(formData, "taxYear"));
+  const issuerNameValue = readFormString(formData, "issuerName");
+  const issuerName = issuerNameValue || null;
+  const file = readFormFile(formData, "file");
+  const redirectTaxYear = taxYear ?? getDefaultTaxYear();
 
-  if (!category || !Number.isInteger(taxYear) || !(file instanceof File)) {
-    return portalRedirect(request, taxYear, "error", "missing-file");
+  if (!category || taxYear === null || !file) {
+    return portalRedirect(request, redirectTaxYear, "error", "missing-file");
   }
 
-  if (!CLIENT_DOCUMENT_CATEGORIES.includes(category)) {
+  if (!isClientDocumentCategory(category)) {
     return portalRedirect(request, taxYear, "error", "invalid-document-category");
   }
 
-  if (file.size === 0 || file.size > MAX_UPLOAD_BYTES) {
+  if (!isSupportedTaxYear(taxYear)) {
+    return portalRedirect(request, redirectTaxYear, "error", "invalid-tax-year");
+  }
+
+  if (issuerNameValue && issuerNameValue.length > 120) {
+    return portalRedirect(request, taxYear, "error", "invalid-issuer-name");
+  }
+
+  if (file.size === 0 || file.size > MAX_DOCUMENT_UPLOAD_BYTES) {
     return portalRedirect(request, taxYear, "error", "invalid-file-size");
   }
 
+  if (!isSupportedDocumentContentType(file.type)) {
+    return portalRedirect(request, taxYear, "error", "invalid-file-type");
+  }
+
+  let storageKey: string | null = null;
+
   try {
-    const contentType = file.type || "application/octet-stream";
     const storedFileName = buildStoredFileName({
       category,
       taxYear,
       type: DocumentType.CLIENT_UPLOAD,
-      contentType,
+      contentType: file.type,
     });
 
-    const storageKey = await uploadDocumentToStorage({
+    storageKey = await uploadDocumentToStorage({
       clientId: client.id,
-      contentType,
+      contentType: file.type,
       fileBuffer: Buffer.from(await file.arrayBuffer()),
       folder: "client-uploads",
     });
@@ -65,7 +92,7 @@ export async function POST(request: Request) {
         taxYear,
         issuerName,
         fileName: storedFileName,
-        contentType,
+        contentType: file.type,
         sizeBytes: file.size,
         storageKey,
         uploadedBy: client.email,
@@ -75,6 +102,13 @@ export async function POST(request: Request) {
     return portalRedirect(request, taxYear, "success", "document-uploaded");
   } catch (error) {
     console.error("Failed to upload client document", error);
+
+    if (storageKey) {
+      await deleteDocumentFromStorage(storageKey).catch((cleanupError: unknown) => {
+        console.error("Failed to clean up orphaned client upload", cleanupError);
+      });
+    }
+
     return portalRedirect(request, taxYear, "error", "document-upload-failed");
   }
 }

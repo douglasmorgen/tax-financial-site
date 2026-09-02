@@ -1,43 +1,66 @@
 import { NextResponse } from "next/server";
-import { DocumentCategory, DocumentType } from "@prisma/client";
+import { DocumentType } from "@/generated/prisma/enums";
 import {
-  ADMIN_DOCUMENT_CATEGORIES,
   doesReturnTypeRequireState,
+  getDefaultTaxYear,
+  isAdminDocumentCategory,
   isFinishedReturnType,
+  isSupportedTaxYear,
   isUSStateCode,
 } from "@/lib/document-options";
 import { buildStoredFileName } from "@/lib/document-file";
+import {
+  isSupportedDocumentContentType,
+  MAX_DOCUMENT_UPLOAD_BYTES,
+} from "@/lib/document-policy";
 import { prisma } from "@/lib/prisma";
-import { uploadDocumentToStorage } from "@/lib/storage";
+import { isUuid, parseInteger, readFormFile, readFormString } from "@/lib/request-data";
+import {
+  deleteDocumentFromStorage,
+  uploadDocumentToStorage,
+} from "@/lib/storage";
 
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+type ActionStatus = "error" | "success";
 
-function adminRedirect(request: Request, taxYear: number, status: string, value: string) {
+function adminRedirect(request: Request, taxYear: number, status: ActionStatus, value: string): NextResponse {
   const url = new URL("/admin", request.url);
   url.searchParams.set("taxYear", String(taxYear));
   url.searchParams.set(status, value);
   return NextResponse.redirect(url, 303);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   const formData = await request.formData();
-  const clientId = formData.get("clientId")?.toString() || "";
-  const category = formData.get("category")?.toString() as DocumentCategory | undefined;
-  const taxYear = Number.parseInt(formData.get("taxYear")?.toString() || "", 10);
-  const returnType = formData.get("returnType")?.toString().trim() || "";
-  const stateCode = formData.get("stateCode")?.toString().trim().toUpperCase() || "";
-  const file = formData.get("file");
+  const clientId = readFormString(formData, "clientId");
+  const category = readFormString(formData, "category");
+  const taxYear = parseInteger(readFormString(formData, "taxYear"));
+  const returnType = readFormString(formData, "returnType");
+  const stateCode = readFormString(formData, "stateCode")?.toUpperCase() ?? "";
+  const file = readFormFile(formData, "file");
+  const redirectTaxYear = taxYear ?? getDefaultTaxYear();
 
-  if (!clientId || !category || !Number.isInteger(taxYear) || !(file instanceof File)) {
-    return adminRedirect(request, taxYear, "error", "missing-document-fields");
+  if (!clientId || !category || taxYear === null || !returnType || !file) {
+    return adminRedirect(request, redirectTaxYear, "error", "missing-document-fields");
   }
 
-  if (!ADMIN_DOCUMENT_CATEGORIES.includes(category)) {
+  if (!isUuid(clientId)) {
+    return adminRedirect(request, redirectTaxYear, "error", "invalid-client");
+  }
+
+  if (!isAdminDocumentCategory(category)) {
     return adminRedirect(request, taxYear, "error", "invalid-document-category");
   }
 
-  if (file.size === 0 || file.size > MAX_UPLOAD_BYTES) {
+  if (!isSupportedTaxYear(taxYear)) {
+    return adminRedirect(request, redirectTaxYear, "error", "invalid-tax-year");
+  }
+
+  if (file.size === 0 || file.size > MAX_DOCUMENT_UPLOAD_BYTES) {
     return adminRedirect(request, taxYear, "error", "invalid-document-size");
+  }
+
+  if (!isSupportedDocumentContentType(file.type)) {
+    return adminRedirect(request, taxYear, "error", "invalid-document-type");
   }
 
   if (!isFinishedReturnType(returnType)) {
@@ -51,21 +74,21 @@ export async function POST(request: Request) {
   }
 
   const normalizedStateCode = requiresState ? stateCode : null;
+  let storageKey: string | null = null;
 
   try {
-    const contentType = file.type || "application/octet-stream";
     const storedFileName = buildStoredFileName({
       category,
       taxYear,
       type: DocumentType.ADMIN_RETURN,
-      contentType,
+      contentType: file.type,
       returnType,
       stateCode: normalizedStateCode,
     });
 
-    const storageKey = await uploadDocumentToStorage({
+    storageKey = await uploadDocumentToStorage({
       clientId,
-      contentType,
+      contentType: file.type,
       fileBuffer: Buffer.from(await file.arrayBuffer()),
       folder: "admin-returns",
     });
@@ -79,7 +102,7 @@ export async function POST(request: Request) {
         issuerName: normalizedStateCode,
         documentLabel: returnType,
         fileName: storedFileName,
-        contentType,
+        contentType: file.type,
         sizeBytes: file.size,
         storageKey,
         uploadedBy: "admin",
@@ -89,6 +112,13 @@ export async function POST(request: Request) {
     return adminRedirect(request, taxYear, "success", "return-uploaded");
   } catch (error) {
     console.error("Failed to upload admin document", error);
+
+    if (storageKey) {
+      await deleteDocumentFromStorage(storageKey).catch((cleanupError: unknown) => {
+        console.error("Failed to clean up orphaned admin upload", cleanupError);
+      });
+    }
+
     return adminRedirect(request, taxYear, "error", "document-upload-failed");
   }
 }

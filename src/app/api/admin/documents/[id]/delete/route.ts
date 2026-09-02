@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isUuid } from "@/lib/request-data";
 import { deleteDocumentFromStorage } from "@/lib/storage";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+  { params }: RouteContext<"/api/admin/documents/[id]/delete">,
+): Promise<Response> {
   const { id } = await params;
+
+  if (!isUuid(id)) {
+    return NextResponse.redirect(new URL("/admin?error=document-not-found", request.url), 303);
+  }
 
   const document = await prisma.document.findUnique({
     where: {

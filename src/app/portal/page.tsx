@@ -1,17 +1,28 @@
-import { DocumentType } from "@prisma/client";
+import { DocumentType } from "@/generated/prisma/enums";
 import { PortalTabsView } from "@/components/portal/PortalTabsView";
 import { requireAuthenticatedClient } from "@/lib/client-auth";
 import { getDefaultTaxYear, getTaxYearChoices } from "@/lib/document-options";
 import { prisma } from "@/lib/prisma";
 
-type PortalPageProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-};
-
 type PortalTab = "profile" | "upload" | "returns";
 
-function readParam(value: string | string[] | undefined) {
+type SearchParam = string | string[] | undefined;
+
+type PortalPageProps = {
+  searchParams?: Promise<{
+    error?: SearchParam;
+    success?: SearchParam;
+    tab?: SearchParam;
+    taxYear?: SearchParam;
+  }>;
+};
+
+function readParam(value: SearchParam): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function isPortalTab(value: string | undefined): value is PortalTab {
+  return value === "profile" || value === "upload" || value === "returns";
 }
 
 export default async function PortalPage({ searchParams }: PortalPageProps) {
@@ -19,7 +30,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
   const params = (await searchParams) || {};
   const error = readParam(params.error);
   const success = readParam(params.success);
-  const requestedTab = readParam(params.tab) as PortalTab | undefined;
+  const requestedTab = readParam(params.tab);
   const selectedTaxYearParam = Number.parseInt(readParam(params.taxYear) || "", 10);
 
   const documents = await prisma.document.findMany({
@@ -55,7 +66,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
   const defaultTaxYear = getDefaultTaxYear();
   const selectedTaxYear = taxYearChoices.includes(selectedTaxYearParam) ? selectedTaxYearParam : defaultTaxYear;
   const initialTab: PortalTab =
-    requestedTab === "profile" || requestedTab === "upload" || requestedTab === "returns"
+    isPortalTab(requestedTab)
       ? requestedTab
       : needsProfile
         ? "profile"

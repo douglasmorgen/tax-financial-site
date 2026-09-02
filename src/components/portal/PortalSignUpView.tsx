@@ -1,6 +1,6 @@
 import { SignUp } from "@clerk/nextjs";
 
-export default function PortalSignUpPage() {
+export function PortalSignUpView() {
   return (
     <div className="min-h-screen bg-slate-100 px-6 py-16">
       <div className="mx-auto flex max-w-5xl flex-col gap-10 lg:flex-row lg:items-center">

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedClient } from "@/lib/client-auth";
 import { prisma } from "@/lib/prisma";
+import { readFormString } from "@/lib/request-data";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   const client = await getAuthenticatedClient();
 
   if (!client) {
@@ -10,12 +11,22 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
-  const name = formData.get("name")?.toString().trim() || "";
-  const address = formData.get("address")?.toString().trim() || null;
-  const phoneNumber = formData.get("phoneNumber")?.toString().trim() || null;
+  const name = readFormString(formData, "name");
+  const addressValue = readFormString(formData, "address");
+  const phoneNumberValue = readFormString(formData, "phoneNumber");
+  const address = addressValue || null;
+  const phoneNumber = phoneNumberValue || null;
 
   if (!name) {
     return NextResponse.redirect(new URL("/portal?tab=profile&error=missing-profile-name", request.url), 303);
+  }
+
+  if (
+    name.length > 120 ||
+    (addressValue && addressValue.length > 1_000) ||
+    (phoneNumberValue && phoneNumberValue.length > 50)
+  ) {
+    return NextResponse.redirect(new URL("/portal?tab=profile&error=invalid-profile", request.url), 303);
   }
 
   await prisma.client.update({

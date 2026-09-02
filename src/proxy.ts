@@ -1,12 +1,16 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
+import { secureCompare } from "@/lib/security";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
 const isProtectedPortalRoute = createRouteMatcher(["/portal(.*)", "/api/client(.*)"]);
 const isPublicPortalRoute = createRouteMatcher(["/portal/login(.*)", "/portal/sign-up(.*)"]);
 
 const clerkProxyUrl = process.env.CLERK_PROXY_URL || process.env.NEXT_PUBLIC_CLERK_PROXY_URL;
+const clerkPublishableKey =
+  process.env.CLERK_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const clerkAuthorizedParties = process.env.CLERK_AUTHORIZED_PARTIES
   ? process.env.CLERK_AUTHORIZED_PARTIES.split(",")
       .map((party) => party.trim())
@@ -22,27 +26,30 @@ const clerk = clerkMiddleware(
     return NextResponse.next();
   },
   {
-    publishableKey:
-      process.env.CLERK_PUBLISHABLE_KEY ||
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-    proxyUrl: clerkProxyUrl,
-    authorizedParties: clerkAuthorizedParties,
+    ...(clerkPublishableKey ? { publishableKey: clerkPublishableKey } : {}),
+    ...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {}),
+    ...(clerkAuthorizedParties?.length
+      ? { authorizedParties: clerkAuthorizedParties }
+      : {}),
   },
 );
 
-export default async function middleware(request: NextRequest, event: NextFetchEvent) {
+export default async function proxy(request: NextRequest, event: NextFetchEvent) {
   if (isAdminRoute(request)) {
-    if (!process.env.ADMIN_USER || !process.env.ADMIN_PASS) {
+    const adminUser = process.env.ADMIN_USER;
+    const adminPassword = process.env.ADMIN_PASS;
+
+    if (!adminUser || !adminPassword) {
       console.error("ADMIN_USER and ADMIN_PASS environment variables must be set");
       return new NextResponse("Server configuration error", { status: 500 });
     }
 
     const basicAuth = request.headers.get("authorization");
     const expectedAuth = "Basic " + Buffer.from(
-      `${process.env.ADMIN_USER}:${process.env.ADMIN_PASS}`,
+      `${adminUser}:${adminPassword}`,
     ).toString("base64");
 
-    if (basicAuth !== expectedAuth) {
+    if (!basicAuth || !secureCompare(basicAuth, expectedAuth)) {
       return new NextResponse("Authentication required", {
         status: 401,
         headers: {

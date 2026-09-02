@@ -1,12 +1,12 @@
-import React from 'react';
+import Link from "next/link";
 
-const HomePage = () => {
+export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
       <header className="text-center mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 leading-tight">
+        <h1 className="text-3xl font-bold text-gray-900 leading-tight">
           Expert Tax, Financial & Investment Planning for Tech Professionals
-        </h2>
+        </h1>
         <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
           I help individuals and startups navigate complex financial challenges, optimize taxes, and make informed decisions about RSUs, stock options, and cap tables.
         </p>
@@ -51,15 +51,13 @@ const HomePage = () => {
         <p className="text-lg text-gray-600 mb-8">
           Let&apos;s discuss your financial future. Reach out now to schedule a consultation and take the first step toward optimizing your finances.
         </p>
-        <a
+        <Link
           href="/contact"
           className="inline-block bg-blue-600 text-white px-8 py-4 rounded-full text-xl font-semibold shadow-lg hover:bg-blue-700 transition duration-300"
         >
           Contact Me
-        </a>
+        </Link>
       </section>
     </div>
   );
-};
-
-export default HomePage;
+}

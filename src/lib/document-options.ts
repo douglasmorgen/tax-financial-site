@@ -1,6 +1,6 @@
-import { DocumentCategory } from "@prisma/client";
+import { DocumentCategory } from "@/generated/prisma/enums";
 
-export const CLIENT_DOCUMENT_CATEGORIES: DocumentCategory[] = [
+export const CLIENT_DOCUMENT_CATEGORIES = [
   DocumentCategory.W2,
   DocumentCategory.W2G,
   DocumentCategory.FORM_1099_INT,
@@ -22,12 +22,15 @@ export const CLIENT_DOCUMENT_CATEGORIES: DocumentCategory[] = [
   DocumentCategory.ID_DOCUMENT,
   DocumentCategory.IRS_NOTICE,
   DocumentCategory.OTHER,
-];
+] as const satisfies readonly DocumentCategory[];
 
-export const ADMIN_DOCUMENT_CATEGORIES: DocumentCategory[] = [
+export const ADMIN_DOCUMENT_CATEGORIES = [
   DocumentCategory.COMPLETED_RETURN,
   DocumentCategory.OTHER,
-];
+] as const satisfies readonly DocumentCategory[];
+
+const CLIENT_DOCUMENT_CATEGORY_SET: ReadonlySet<string> = new Set(CLIENT_DOCUMENT_CATEGORIES);
+const ADMIN_DOCUMENT_CATEGORY_SET: ReadonlySet<string> = new Set(ADMIN_DOCUMENT_CATEGORIES);
 
 export const FINISHED_RETURN_TYPES = [
   "State signature page",
@@ -43,6 +46,8 @@ export const FINISHED_RETURN_TYPES = [
   "Payment voucher",
   "Amended return (Form 1040-X)",
 ] as const;
+
+export type FinishedReturnType = (typeof FINISHED_RETURN_TYPES)[number];
 
 export const FINISHED_RETURN_TYPES_REQUIRING_STATE = new Set<string>([
   "State signature page",
@@ -105,13 +110,23 @@ export const US_STATE_OPTIONS = [
   { code: "WY", name: "Wyoming" },
 ] as const;
 
+export type USStateCode = (typeof US_STATE_OPTIONS)[number]["code"];
+
 export const US_STATE_CODES: ReadonlySet<string> = new Set(US_STATE_OPTIONS.map((state) => state.code));
 
-export function isUSStateCode(value: string): boolean {
+export function isClientDocumentCategory(value: string): value is DocumentCategory {
+  return CLIENT_DOCUMENT_CATEGORY_SET.has(value);
+}
+
+export function isAdminDocumentCategory(value: string): value is DocumentCategory {
+  return ADMIN_DOCUMENT_CATEGORY_SET.has(value);
+}
+
+export function isUSStateCode(value: string): value is USStateCode {
   return US_STATE_CODES.has(value);
 }
 
-export function isFinishedReturnType(value: string): boolean {
+export function isFinishedReturnType(value: string): value is FinishedReturnType {
   return FINISHED_RETURN_TYPES.some((option) => option === value);
 }
 
@@ -166,12 +181,12 @@ export function getDocumentCategoryLabel(category: DocumentCategory): string {
     case DocumentCategory.OTHER:
       return "Other (Anything Else)";
     default:
-      return category;
+      return assertNever(category);
   }
 }
 
-export function getTaxYearChoices(): number[] {
-  const defaultTaxYear = getDefaultTaxYear();
+export function getTaxYearChoices(date = new Date()): number[] {
+  const defaultTaxYear = getDefaultTaxYear(date);
   return [defaultTaxYear + 1, defaultTaxYear, defaultTaxYear - 1, defaultTaxYear - 2];
 }
 
@@ -180,4 +195,12 @@ export function getDefaultTaxYear(date = new Date()): number {
   const year = date.getFullYear();
 
   return month <= 5 ? year - 1 : year;
+}
+
+export function isSupportedTaxYear(value: number, date = new Date()): boolean {
+  return getTaxYearChoices(date).includes(value);
+}
+
+function assertNever(value: never): never {
+  throw new Error(`Unhandled document category: ${String(value)}`);
 }

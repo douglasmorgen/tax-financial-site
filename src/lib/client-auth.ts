@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import type { ClientModel } from "@/generated/prisma/models";
 import { redirect } from "next/navigation";
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/prisma";
 
 export type AuthenticatedClient = {
   id: string;
@@ -10,7 +11,7 @@ export type AuthenticatedClient = {
   phoneNumber: string | null;
 };
 
-async function resolveClientRecord() {
+async function resolveClientRecord(): Promise<ClientModel | null> {
   const { userId } = await auth();
 
   if (!userId) {
@@ -49,7 +50,8 @@ async function resolveClientRecord() {
 
   const fallbackName =
     user?.fullName?.trim() ||
-    primaryEmail.split("@")[0];
+    primaryEmail.split("@").at(0) ||
+    primaryEmail;
 
   return prisma.client.create({
     data: {

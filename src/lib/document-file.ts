@@ -1,28 +1,28 @@
-import { DocumentCategory, DocumentType } from "@prisma/client";
-import { randomUUID } from "crypto";
+import { DocumentCategory, DocumentType } from "@/generated/prisma/enums";
+import { randomUUID } from "node:crypto";
+import type { SupportedDocumentContentType } from "@/lib/document-policy";
 import { sanitizeFileName } from "@/lib/security";
 
-const CONTENT_TYPE_EXTENSIONS: Record<string, string> = {
+const CONTENT_TYPE_EXTENSIONS = {
   "application/pdf": "pdf",
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
   "image/heic": "heic",
-};
+} as const satisfies Readonly<Record<SupportedDocumentContentType, string>>;
 
-function getFileExtension(contentType: string) {
-  const normalizedType = contentType.toLowerCase().trim();
-  return CONTENT_TYPE_EXTENSIONS[normalizedType] || "bin";
+function getFileExtension(contentType: SupportedDocumentContentType): string {
+  return CONTENT_TYPE_EXTENSIONS[contentType];
 }
 
 export function buildStoredFileName(params: {
   category: DocumentCategory;
   taxYear: number;
   type: DocumentType;
-  contentType: string;
+  contentType: SupportedDocumentContentType;
   returnType?: string | null;
   stateCode?: string | null;
-}) {
+}): string {
   const typeSlug = params.type === DocumentType.ADMIN_RETURN ? "completed-return" : "source-document";
   const categorySlug = params.category.toLowerCase();
   const extension = getFileExtension(params.contentType);

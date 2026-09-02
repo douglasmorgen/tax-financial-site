@@ -1,25 +1,32 @@
 import Link from "next/link";
-import { DocumentType } from "@prisma/client";
+import { DocumentType } from "@/generated/prisma/enums";
 import {
   getDefaultTaxYear,
   getDocumentCategoryLabel,
   getTaxYearChoices,
 } from "@/lib/document-options";
 import { AdminReturnUploadForm } from "@/components/admin/AdminReturnUploadForm";
+import { getAdminErrorMessage, getAdminSuccessMessage } from "@/lib/action-messages";
 import { prisma } from "@/lib/prisma";
 
+type SearchParam = string | string[] | undefined;
+
 type AdminPageProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  searchParams?: Promise<{
+    error?: SearchParam;
+    success?: SearchParam;
+    taxYear?: SearchParam;
+  }>;
 };
 
-function formatMessage(value: string | string[] | undefined) {
+function formatMessage(value: SearchParam): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const params = (await searchParams) || {};
-  const error = formatMessage(params.error);
-  const success = formatMessage(params.success);
+  const error = getAdminErrorMessage(formatMessage(params.error));
+  const success = getAdminSuccessMessage(formatMessage(params.success));
   const selectedTaxYearParam = Number.parseInt(formatMessage(params.taxYear) || "", 10);
 
   const [contactMessages, leads, clients] = await Promise.all([
@@ -66,12 +73,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
         {success ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
-            Action completed: {success}
+            {success}
           </div>
         ) : null}
         {error ? (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-            Action failed: {error}
+            {error}
           </div>
         ) : null}
 
@@ -97,7 +104,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <section className="rounded-3xl bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-semibold text-slate-900">Upload Completed Document</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Files are posted to the server and stored in your private S3 bucket with server-side encryption enabled.
+              Files are posted to the server and stored in your private S3-compatible bucket.
             </p>
             <AdminReturnUploadForm
               clients={clients.map((client) => ({ id: client.id, name: client.name, email: client.email }))}

@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isUuid } from "@/lib/request-data";
 import { createDownloadResponse } from "@/lib/storage";
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+  { params }: RouteContext<"/api/admin/documents/[id]/download">,
+): Promise<Response> {
   const { id } = await params;
+
+  if (!isUuid(id)) {
+    return NextResponse.json({ message: "Document not found" }, { status: 404 });
+  }
 
   const document = await prisma.document.findUnique({
     where: {

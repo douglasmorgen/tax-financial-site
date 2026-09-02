@@ -1,23 +1,30 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { DocumentCategory } from "@prisma/client";
-import { doesReturnTypeRequireState, FINISHED_RETURN_TYPES, US_STATE_OPTIONS } from "@/lib/document-options";
+import { useState } from "react";
+import { DocumentCategory } from "@/generated/prisma/enums";
+import {
+  doesReturnTypeRequireState,
+  FINISHED_RETURN_TYPES,
+  isFinishedReturnType,
+  US_STATE_OPTIONS,
+} from "@/lib/document-options";
+import type { FinishedReturnType } from "@/lib/document-options";
+import { DOCUMENT_FILE_INPUT_ACCEPT } from "@/lib/document-policy";
 
 type AdminReturnUploadFormProps = {
-  clients: Array<{
+  clients: ReadonlyArray<{
     id: string;
     name: string;
     email: string;
   }>;
-  taxYearChoices: number[];
+  taxYearChoices: readonly number[];
   selectedTaxYear: number;
 };
 
 export function AdminReturnUploadForm({ clients, taxYearChoices, selectedTaxYear }: AdminReturnUploadFormProps) {
-  const [returnType, setReturnType] = useState<string>(FINISHED_RETURN_TYPES[0]);
+  const [returnType, setReturnType] = useState<FinishedReturnType>(FINISHED_RETURN_TYPES[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const requiresState = useMemo(() => doesReturnTypeRequireState(returnType), [returnType]);
+  const requiresState = doesReturnTypeRequireState(returnType);
 
   return (
     <form
@@ -63,7 +70,11 @@ export function AdminReturnUploadForm({ clients, taxYearChoices, selectedTaxYear
           name="returnType"
           required
           value={returnType}
-          onChange={(event) => setReturnType(event.target.value)}
+          onChange={(event) => {
+            if (isFinishedReturnType(event.target.value)) {
+              setReturnType(event.target.value);
+            }
+          }}
           className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none ring-0 transition focus:border-slate-400"
         >
           {FINISHED_RETURN_TYPES.map((option) => (
@@ -97,6 +108,7 @@ export function AdminReturnUploadForm({ clients, taxYearChoices, selectedTaxYear
         <input
           name="file"
           type="file"
+          accept={DOCUMENT_FILE_INPUT_ACCEPT}
           required
           className="w-full rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-sm"
         />

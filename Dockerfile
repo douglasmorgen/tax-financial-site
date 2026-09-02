@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:22-bookworm-slim AS base
+FROM node:24-bookworm-slim AS base
 
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
@@ -10,8 +10,13 @@ RUN apt-get update -y \
 FROM base AS deps
 
 COPY package.json package-lock.json ./
-COPY prisma ./prisma
-RUN npm ci --include=optional
+RUN npm ci --ignore-scripts
+
+FROM base AS production-deps
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --omit=peer --ignore-scripts \
+  && npm cache clean --force
 
 FROM base AS builder
 
@@ -20,6 +25,7 @@ COPY . .
 RUN --mount=type=secret,id=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY \
     --mount=type=secret,id=CLERK_PUBLISHABLE_KEY \
     --mount=type=secret,id=NEXT_PUBLIC_RECAPTCHA_SITE_KEY \
+    DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build" \
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$(cat /run/secrets/NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)" \
     CLERK_PUBLISHABLE_KEY="$(cat /run/secrets/CLERK_PUBLISHABLE_KEY)" \
     NEXT_PUBLIC_RECAPTCHA_SITE_KEY="$(cat /run/secrets/NEXT_PUBLIC_RECAPTCHA_SITE_KEY)" \
@@ -31,8 +37,7 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 COPY package.json package-lock.json ./
-COPY --from=deps /app/node_modules ./node_modules
-RUN npm prune --omit=dev && npm cache clean --force
+COPY --from=production-deps /app/node_modules ./node_modules
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public

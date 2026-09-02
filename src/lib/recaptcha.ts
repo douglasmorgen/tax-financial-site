@@ -1,3 +1,5 @@
+import { isObjectRecord } from "@/lib/request-data";
+
 export async function validateRecaptcha(token: string | undefined): Promise<boolean> {
   if (!token) return false;
   const secret = process.env.RECAPTCHA_SECRET_KEY;
@@ -16,8 +18,12 @@ export async function validateRecaptcha(token: string | undefined): Promise<bool
       }),
     });
 
-    const data = await res.json();
-    return data.success === true;
+    if (!res.ok) {
+      return false;
+    }
+
+    const data: unknown = await res.json();
+    return isObjectRecord(data) && data["success"] === true;
   } catch (err) {
     console.error("Error verifying reCAPTCHA:", err);
     return false;
