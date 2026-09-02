@@ -189,7 +189,7 @@ Important limitations to address before materially increasing usage or complianc
 
 ## Configuration and deployment
 
-Environment variables are the only supported configuration mechanism; `.env.example` documents the contract without containing credentials.
+Environment variables are the only supported application configuration mechanism; `.env.example` documents that contract without containing credentials. The tracked Kamal configuration is also value-free: it loads machine-specific deployment coordinates from ignored `.kamal/deploy.env`, while ignored `.kamal/secrets` supplies credentials. Tracked `.kamal/*.example` files document both local contracts using placeholders only.
 
 The Vercel build path runs `prisma migrate deploy` before the production build. Development and production builds follow the current Next.js defaults. The Docker path uses a multi-stage image, a non-routable placeholder database URL while generating the client, and BuildKit secrets for public build-time configuration. Real database credentials remain runtime secrets. Kamal supplies runtime secrets and can manage the PostgreSQL accessory defined in `config/deploy.yml`.
 

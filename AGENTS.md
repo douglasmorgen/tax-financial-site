@@ -15,6 +15,7 @@ These instructions apply to the entire repository. Read `README.md` and `docs/AR
 - Use the existing npm toolchain and committed `package-lock.json`.
 - Keep credentials, client data, database exports, certificates, and local environment files out of Git and Docker contexts.
 - Do not read or print values from ignored credential files merely to make a check pass. Inspect only required key names or presence, use synthetic values for local verification, and report missing configuration without exposing existing secrets.
+- Keep deployment hosts, SSH users and ports, registry namespaces, host-port mappings, and database coordinates in ignored `.kamal/deploy.env`. Tracked Kamal configuration and examples must remain value-free and safe to publish.
 
 ## TypeScript Standards
 

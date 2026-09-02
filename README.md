@@ -74,7 +74,8 @@ PostgreSQL stores clients, leads, messages, and document metadata. The actual do
 │   └── schema.prisma        # Application data model
 ├── tests/unit/              # Vitest domain and integration-boundary specs
 ├── docs/ARCHITECTURE.md     # Architecture decisions, flows, and tradeoffs
-├── config/deploy.yml        # Kamal deployment and PostgreSQL accessory
+├── .kamal/*.example         # Safe templates for ignored local deployment files
+├── config/deploy.yml        # Value-free Kamal deployment and PostgreSQL accessory
 ├── prisma.config.ts         # Prisma CLI and datasource configuration
 ├── vitest.config.ts         # Test discovery and coverage thresholds
 ├── Dockerfile               # Node 24 multi-stage production image
@@ -214,15 +215,23 @@ The deployment database must be reachable from Vercel's build environment, and i
 
 ### Docker / Kamal
 
-The multi-stage `Dockerfile` builds and runs the application with Node.js 24 on port `3000`. Development dependencies stay in the builder stage; the final image contains production dependencies, the compiled Next.js output, public assets, configuration, and committed Prisma migrations.
+The multi-stage `Dockerfile` builds and runs the application with Node.js 24 on port `3000`. Development dependencies stay in the builder stage; the final image contains production dependencies, the compiled Next.js output, configuration, and committed Prisma migrations.
 
 Docker BuildKit secrets supply Clerk and reCAPTCHA public build-time values without copying local environment files into the image. The placeholder database URL used by the builder exists only so Prisma can generate its client and Next.js can compile. Runtime database and provider credentials remain external secrets.
 
-`config/deploy.yml` deploys the image with Kamal, publishes it to a loopback-only host port, and defines a persistent PostgreSQL 16 accessory. Reverse-proxy and public TLS configuration are intentionally outside this repository.
+`config/deploy.yml` deploys the image with Kamal, publishes it to a loopback-only host port, and defines a persistent PostgreSQL 16 accessory. The tracked file contains no machine-specific coordinates: it loads them from ignored `.kamal/deploy.env`. Reverse-proxy and public TLS configuration are intentionally outside this repository.
 
 Unlike the Vercel build, the Docker container currently starts `next start` directly and does not apply migrations on boot. Apply `prisma migrate deploy` from a trusted release environment before deploying a schema-dependent image. If that migration fails, do not release the new container.
 
-Before a Kamal deployment, configure the secrets referenced by `config/deploy.yml` outside the repository and review its host, registry, and domain settings for the target environment.
+For a new checkout, create the ignored local deployment files from the safe templates:
+
+```bash
+cp .kamal/deploy.env.example .kamal/deploy.env
+cp .kamal/secrets.example .kamal/secrets
+chmod 600 .kamal/deploy.env .kamal/secrets
+```
+
+Replace every placeholder before using Kamal. `.kamal/deploy.env` owns the host, SSH, port, registry namespace, database coordinates, and application URL. `.kamal/secrets` owns credentials and provider values. Neither local file belongs in Git or the Docker build context.
 
 There is no GitHub Actions deployment workflow; CI verifies the repository but does not publish or deploy it.
 

@@ -1,19 +1,24 @@
+<%
+  require "dotenv"
+  Dotenv.load(".kamal/deploy.env")
+%>
+
 service: finance
 
-image: douglasmorgen/finance
+image: <%= ENV.fetch("KAMAL_IMAGE") %>
 
 servers:
   web:
     hosts:
-      - 174.127.79.77
+      - <%= ENV.fetch("KAMAL_SERVER") %>
     proxy: false
     options:
       publish:
-        - "127.0.0.1:3001:3000"
+        - "127.0.0.1:<%= ENV.fetch("KAMAL_HOST_PORT") %>:3000"
 
 registry:
   server: ghcr.io
-  username: douglasmorgen
+  username: <%= ENV.fetch("KAMAL_REGISTRY_USERNAME") %>
   password:
     - KAMAL_REGISTRY_PASSWORD
 
@@ -37,25 +42,25 @@ env:
     - STORAGE_TOKEN
   clear:
     NODE_ENV: production
-    NEXT_PUBLIC_APP_URL: https://finance.dougmorgen.com
+    NEXT_PUBLIC_APP_URL: <%= ENV.fetch("KAMAL_APP_URL") %>
 
 accessories:
   db:
     image: postgres:16
-    host: 174.127.79.77
-    port: "127.0.0.1:5433:5432"
+    host: <%= ENV.fetch("KAMAL_SERVER") %>
+    port: "127.0.0.1:<%= ENV.fetch("KAMAL_DATABASE_HOST_PORT") %>:5432"
     env:
       clear:
-        POSTGRES_DB: finance_production
-        POSTGRES_USER: finance
+        POSTGRES_DB: <%= ENV.fetch("KAMAL_DATABASE_NAME") %>
+        POSTGRES_USER: <%= ENV.fetch("KAMAL_DATABASE_USER") %>
       secret:
         - POSTGRES_PASSWORD
     directories:
       - data:/var/lib/postgresql/data
 
 ssh:
-  user: root
-  port: "25463"
+  user: <%= ENV.fetch("KAMAL_SSH_USER") %>
+  port: <%= ENV.fetch("KAMAL_SSH_PORT") %>
 
 builder:
   arch: amd64
