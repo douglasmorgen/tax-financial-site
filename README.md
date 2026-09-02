@@ -1,5 +1,7 @@
 # Tax & Financial Planning
 
+[Live site: finance.dougmorgen.com](https://finance.dougmorgen.com)
+
 [![CI](https://github.com/douglasmorgen/tax-financial-site/actions/workflows/ci.yml/badge.svg)](https://github.com/douglasmorgen/tax-financial-site/actions/workflows/ci.yml)
 
 A production-minded full-stack TypeScript application for a tax and financial planning practice, with explicit boundaries from the public website to client authentication, PostgreSQL, private document storage, and deployment. It lets prospective clients contact the practice, lets existing clients submit the records needed to prepare their taxes, and gives the tax preparer a private dashboard for reviewing those records and returning completed tax documents.
